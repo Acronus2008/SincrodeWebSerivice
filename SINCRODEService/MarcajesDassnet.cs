@@ -9,6 +9,7 @@ using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
+using SINCRODEService.Config;
 using SINCRODEService.Models;
 
 namespace SINCRODEService
@@ -28,8 +29,9 @@ namespace SINCRODEService
         public static void ProcesaMarcajes()
         {
             IConfiguration config = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json", true, true)
-                .Build();
+             .SetBasePath(Directory.GetCurrentDirectory())
+             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+             .Build();
 
             //Recorro todos empleados de TBL_EMPLEADOS para consultar su marcaje
             try
@@ -142,9 +144,7 @@ namespace SINCRODEService
 
         public static void ProcesaMarcajesRango(DateTime fechaini, DateTime fechafin, bool AutoPro = true)
         {
-            IConfiguration config = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json", true, true)
-                .Build();
+            IConfiguration config = ConfigHelper.GetConfiguration();
 
             //Recorro todos empleados de TBL_EMPLEADOS para consultar su marcaje
             try
@@ -172,7 +172,7 @@ namespace SINCRODEService
                         AutoPro = AutoPro,
                         RegistrosPro = 0
                     };
-                    context.TblProcesos.Add(proceso);
+                    var procesoTmp = context.TblProcesos.Add(proceso);
 
                     int maxidMarcaje = context.TblMarcajeprocesado.Any()
                         ? context.TblMarcajeprocesado.Max(p => p.IdMar)
@@ -251,7 +251,7 @@ namespace SINCRODEService
                         }
                     }
 
-                    UpdateProccesWhenFinish(maxidProceso, context);
+                    procesoTmp.Entity.FechaFinPro = DateTime.Now;
 
                     Log("Salvando los datos de marcaje");
                     context.SaveChanges();
@@ -268,18 +268,9 @@ namespace SINCRODEService
             }
         }
 
-        private static void UpdateProccesWhenFinish(int maxidProceso, SINCRODEDBContext context)
-        {
-            var procesoAux = context.TblProcesos.Where(m => m.IdPro == maxidProceso).FirstOrDefault();
-            procesoAux.FechaFinPro = DateTime.Now;
-            context.TblProcesos.Update(procesoAux);
-        }
-
         public static void SendMarcajeToWS(SINCRODEDBContext sincrodecontext, int idPro, DateTime fIniPro)
         {
-            IConfiguration config = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json", true, true)
-                .Build();
+            IConfiguration config = ConfigHelper.GetConfiguration();
 
             Log("Comenzando el envio de marcajes al WS");
             //Mando a crear el marcaje en Evalos

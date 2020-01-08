@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using SINCRODEService.Config;
+using System.IO;
 
 namespace SINCRODEService.Models
 {
@@ -21,9 +23,7 @@ namespace SINCRODEService.Models
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            IConfiguration config = new ConfigurationBuilder()
-            .AddJsonFile("appsettings.json", true, true)
-            .Build();
+            IConfiguration config = ConfigHelper.GetConfiguration();
 
             if (!optionsBuilder.IsConfigured)
             {
