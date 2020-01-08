@@ -44,7 +44,7 @@ namespace SINCRODEWebApp.DataBaseService
         private string getDataConnectionString()
         {
             var config = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appsettings.json").Build();
-            return config["DataBaseLogs"].ToString();
+            return config["SQLConexion"].ToString();
         }
     }
 }
