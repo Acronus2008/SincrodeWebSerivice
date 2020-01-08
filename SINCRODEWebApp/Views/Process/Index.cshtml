@@ -19,6 +19,7 @@
 <table class="table table-striped table-bordered" width="100%" id="ItemsTable">
     <thead>
         <tr>
+            <th>Id Proceso</th>
             <th>
                 Inicio
             </th>
@@ -29,13 +30,13 @@
                 Cantidad de Registros
             </th>
             <th>
-                Cantida de Empleados
+                Cantidad de Empleados
             </th>
             <th>
                 Cantidad de errores
             </th>
             <th>
-                Proceso automatico
+                Proceso automático
             </th>
             <th></th>
         </tr>
@@ -58,6 +59,7 @@
                         "method": "POST"
                     },
                     "columns": [
+                        { "data": "idProcess"},
                         { "data": "fechaInicio" },
                         { "data": "fechaFin" },
                         { "data": "registros" },
@@ -78,6 +80,22 @@
                             }
                         }
                     ],
+                    "language": {
+                        "lengthMenu": "Cantidad de registros _MENU_ por página",
+                        "zeroRecords": "No existen procesos",
+                        "info": "Mostrando página _PAGE_ de _PAGES_",
+                        "infoEmpty": "No existen resultados disponibles",
+                        "infoFiltered": "(filtered from _MAX_ total records)",
+                        "search": "Buscar:",
+                        "processing": "Obteniendo listado de procesos",
+                        "searchPlaceholder": "Buscar procesos",
+                        "paginate": {
+                            "first": "Inicio",
+                            "last": "Ultimo",
+                            "next": "Próximo",
+                            "previous": "Anterior"
+                        }
+                    },
                     "ordering": true,
                     "paging": true,
                     "pagingType": "full_numbers",
