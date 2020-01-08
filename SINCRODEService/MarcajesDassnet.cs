@@ -77,17 +77,12 @@ namespace SINCRODEService
                                                    join t in dassnetcontext.Tarjetas on m.FkTarjeta equals t.Id into tempJoin
                                                    from j in tempJoin.DefaultIfEmpty()
                                                    where p.Dni == employee.DniEmp &&
-                                                         (Convert.ToInt32(m.FechaYhora.Substring(0, 4)) > lastdateprocess.Year ||
-                                                         (Convert.ToInt32(m.FechaYhora.Substring(0, 4)) == lastdateprocess.Year &&
-                                                         (Convert.ToInt32(m.FechaYhora.Substring(4, 2)) > lastdateprocess.Month ||
-                                                         (Convert.ToInt32(m.FechaYhora.Substring(4, 2)) == lastdateprocess.Month &&
-                                                        (Convert.ToInt32(m.FechaYhora.Substring(6, 2)) > lastdateprocess.Day ||
-                                                       (Convert.ToInt32(m.FechaYhora.Substring(6, 2)) == lastdateprocess.Day &&
-                                                        (Convert.ToInt32(m.FechaYhora.Substring(8, 2)) > lastdateprocess.Hour ||
-                                                       (Convert.ToInt32(m.FechaYhora.Substring(8, 2)) == lastdateprocess.Hour &&
-                                                        (Convert.ToInt32(m.FechaYhora.Substring(10, 2)) > lastdateprocess.Minute ||
-                                                       (Convert.ToInt32(m.FechaYhora.Substring(10, 2)) == lastdateprocess.Minute &&
-                                                        Convert.ToInt32(m.FechaYhora.Substring(12, 2)) >= lastdateprocess.Second))))))))))
+                                                         Convert.ToInt32(m.FechaYhora.Substring(0, 4)) >= lastdateprocess.Year &&
+                                                         Convert.ToInt32(m.FechaYhora.Substring(4, 2)) >= lastdateprocess.Month &&
+                                                         Convert.ToInt32(m.FechaYhora.Substring(6, 2)) >= lastdateprocess.Day &&
+                                                         Convert.ToInt32(m.FechaYhora.Substring(8, 2)) >= lastdateprocess.Hour &&
+                                                         Convert.ToInt32(m.FechaYhora.Substring(10, 2)) >= lastdateprocess.Minute &&
+                                                         Convert.ToInt32(m.FechaYhora.Substring(12, 2)) >= lastdateprocess.Second
                                                    select new MarcajeEmpleado
                                                    {
                                                        Id = m.Id,
@@ -150,6 +145,8 @@ namespace SINCRODEService
             try
             {
                 int maxidProceso;
+                int intfechaIni = Convert.ToInt32(string.Format("{0}{1}{2}", fechaini.Year, fechaini.Month, fechaini.Day));
+                int intfechaFin = Convert.ToInt32(string.Format("{0}{1}{2}", fechafin.Year, fechafin.Month, fechafin.Day));
                 using (var context = new SINCRODEDBContext())
                 {
                     var employees = context.TblEmpleados.ToList();
@@ -172,7 +169,7 @@ namespace SINCRODEService
                         AutoPro = AutoPro,
                         RegistrosPro = 0
                     };
-                    context.TblProcesos.Add(proceso);
+                    var procesoTmp = context.TblProcesos.Add(proceso);
 
                     int maxidMarcaje = context.TblMarcajeprocesado.Any()
                         ? context.TblMarcajeprocesado.Max(p => p.IdMar)
@@ -190,24 +187,8 @@ namespace SINCRODEService
                                                    join t in dassnetcontext.Tarjetas on m.FkTarjeta equals t.Id into tempJoin
                                                    from j in tempJoin.DefaultIfEmpty()
                                                    where p.Dni == employee.DniEmp &&
-                                                         Convert.ToInt32(m.FechaYhora.Substring(0, 4)) >= fechaini.Year &&
-                                                         Convert.ToInt32(m.FechaYhora.Substring(0, 4)) <= fechafin.Year &&
-                                                         Convert.ToInt32(m.FechaYhora.Substring(4, 2)) >= fechaini.Month &&
-                                                         Convert.ToInt32(m.FechaYhora.Substring(4, 2)) <= fechafin.Month &&
-                                                         Convert.ToInt32(m.FechaYhora.Substring(6, 2)) >= fechaini.Day &&
-                                                         Convert.ToInt32(m.FechaYhora.Substring(6, 2)) <= fechafin.Day &&
-                                                         Convert.ToInt32(m.FechaYhora.Substring(8, 2)) >= fechaini.Hour &&
-                                                         Convert.ToInt32(m.FechaYhora.Substring(8, 2)) <= fechafin.Hour &&
-                                                         Convert.ToInt32(m.FechaYhora.Substring(10, 2)) >= fechaini.Minute &&
-                                                         Convert.ToInt32(m.FechaYhora.Substring(10, 2)) <= fechafin.Minute &&
-                                                         Convert.ToInt32(m.FechaYhora.Substring(12, 2)) >= fechaini.Second &&
-                                                         Convert.ToInt32(m.FechaYhora.Substring(12, 2)) <= fechafin.Second
-                                                   //Convert.ToInt32(m.FechaYhora.Substring(0, 4)) >= lastdateprocess.Year &&
-                                                   //Convert.ToInt32(m.FechaYhora.Substring(4, 2)) >= lastdateprocess.Month &&
-                                                   //Convert.ToInt32(m.FechaYhora.Substring(6, 2)) >= lastdateprocess.Day &&
-                                                   //Convert.ToInt32(m.FechaYhora.Substring(8, 2)) >= lastdateprocess.Hour &&
-                                                   //Convert.ToInt32(m.FechaYhora.Substring(10, 2)) >= lastdateprocess.Minute &&
-                                                   //Convert.ToInt32(m.FechaYhora.Substring(12, 2)) >= lastdateprocess.Second
+                                                         Convert.ToInt32(m.FechaYhora.Substring(0, 8)) >= intfechaIni &&
+                                                         Convert.ToInt32(m.FechaYhora.Substring(0, 8)) <= intfechaFin
                                                    select new MarcajeEmpleado
                                                    {
                                                        Id = m.Id,
@@ -217,10 +198,6 @@ namespace SINCRODEService
                                                        CodLector = l.Id,
                                                        Nombre = l.Nombre
                                                    };
-
-                            // var marcajes = dassnetcontext.MensajesAcceso.FromSqlRaw(sqlstr).ToList();
-
-                            //Log(marcajesEmpleado.First().FechayHora.ToString());
 
                             #endregion
 
@@ -251,7 +228,7 @@ namespace SINCRODEService
                         }
                     }
 
-                    UpdateProccesWhenFinish(maxidProceso, context);
+                    procesoTmp.Entity.FechaFinPro = DateTime.Now;
 
                     Log("Salvando los datos de marcaje");
                     context.SaveChanges();
@@ -286,9 +263,6 @@ namespace SINCRODEService
             //Creo el json con los datos q debo enviarle al ws
             string jsonattendance;
             string wsEvalosMethod;
-            string jsonResponse;
-            string putResponse;
-            string putMessage;
 
             int cantTotalRegistros = 0;
             int cantRegistroPro = 0;
