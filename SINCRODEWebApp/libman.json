@@ -5,6 +5,10 @@
     {
       "library": "font-awesome@5.11.2",
       "destination": "wwwroot/lib/font-awesome/"
+    },
+    {
+      "library": "spin.js@2.3.2",
+      "destination": "wwwroot/lib/spin.js/"
     }
   ]
 }
