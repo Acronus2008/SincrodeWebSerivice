@@ -1,0 +1,134 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+
+    <environment include="Development">
+        <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
+    </environment>
+
+    <link rel="stylesheet" href="~lib/font-awesome/css/all.min.css" />
+    <script src="~/lib/font-awesome/js/all.js"></script>
+
+    <environment exclude="Development">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+              asp-fallback-href="~/lib/bootstrap/dist/css/bootstrap.min.css"
+              asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute"
+              crossorigin="anonymous"
+              integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" />
+    </environment>
+    <link rel="stylesheet" href="~/css/site.css" />
+    @RenderSection("styles", required: false)
+
+    <style>
+        .btnTransparent {
+            background-color: transparent !important;
+            border: none !important;
+            cursor: pointer !important;
+            overflow: hidden !important;
+            outline: none !important;
+        }
+    </style>
+
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container">
+                <img src="~/logo_sacyr.jpg" alt="SACYR" style="height:40px; width: 100px" /></a>
+                <a class="navbar-brand" asp-area="" asp-controller="process" asp-action="Index"></a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse">
+                    <partial name="_LoginPartial" />
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    @*<footer class="border-top footer text-muted">
+            <div class="container">
+                &copy; 2020 - SACIR SINCRODE Web
+            </div>
+        </footer>*@
+
+    <environment include="Development">
+        <script src="~/lib/jquery/dist/jquery.js"></script>
+        <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.js"></script>
+        <link rel="stylesheet" href="~lib/font-awesome/css/all.min.css" />
+    </environment>
+    <environment exclude="Development">
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/js/all.js"
+                asp-fallback-src="~/lib/font-awesome/js/all.js"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.css"
+              asp-fallback-href="~/lib/font-awesome/css/all.css" />
+    </environment>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script>
+        (function () {
+            
+            $("#fechaWarning").hide();
+
+            var fechaInicio = null;
+            var fechaFin = null;
+
+            $("#fechaInicio").on("change", function (event) {
+                fechaInicio = event.target.valueAsNumber;
+                validatorWarning(fechaInicio, fechaFin);
+            });
+
+            $("#fechaFin").on("change", function (event) {
+                fechaFin = event.target.valueAsNumber;
+                validatorWarning(fechaInicio, fechaFin);
+            });
+
+        })();
+
+        function validatorWarning(fechaInicio, fechaFin) {
+            
+            if (fechaInicio > fechaFin) {
+                $("#fechaWarning").show("slow");
+                return;
+            }
+
+            $("#fechaWarning").hide("slow");
+
+            return;
+        }
+
+        function onSubmitValidator() {
+            var fechaInicio = $("#fechaInicio").val();
+            var fechaFin = $("#fechaFin").val();
+
+            console.log("fechaInicio > fechaFin: " + fechaInicio + " > " + fechaFin + " > "+ (fechaInicio > fechaFin));
+
+            if (fechaInicio > fechaFin) {
+                
+                $("fechaWarning").show("slow");
+                return false;
+            }
+            
+            $("fechaWarning").hide("fast");
+            return true;
+        }
+    </script>
+
+
+    @RenderSection("Scripts", required: false)
+
+
+</body>
+</html>

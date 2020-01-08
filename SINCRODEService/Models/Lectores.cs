@@ -1,0 +1,75 @@
+﻿namespace SINCRODEService.Models
+{
+    public partial class Lectores
+    {
+        public int Id { get; set; }
+        public string Nombre { get; set; }
+        public string EstadoLectorRemoto { get; set; }
+        public string MsgDisplay { get; set; }
+        public string Ocultar { get; set; }
+        public string OcultarLectorMatriculas { get; set; }
+        public string MensAcceso { get; set; }
+        public string AlarmaTarjInvalida { get; set; }
+        public string Biestable { get; set; }
+        public int? TiempoBloqueo { get; set; }
+        public string ModoLectorMatriculas { get; set; }
+        public string BiometricoConModos { get; set; }
+        public int? PrioridadTi { get; set; }
+        public int? Propiedades { get; set; }
+        public string Codigo { get; set; }
+        public string VideoIp { get; set; }
+        public string DirVideoIp { get; set; }
+        public string Pass { get; set; }
+        public int? Canal { get; set; }
+        public string Observaciones { get; set; }
+        public int? LectorBiometrico { get; set; }
+        public string PuntoSincronizacion { get; set; }
+        public string EnviarTodasLasHuellas { get; set; }
+        public int? FkSistema { get; set; }
+        public int? FkTipoDispositivo { get; set; }
+        public int? FkLectorBiometrico { get; set; }
+        public int? NumLector { get; set; }
+        public int? FkHorarioLector { get; set; }
+        public string AccInhibido { get; set; }
+        public string AccConfirmado { get; set; }
+        public int? TiempoEmbarque { get; set; }
+        public int? PrioridadFe { get; set; }
+        public int? Numero { get; set; }
+        public string EstadoHorario { get; set; }
+        public int? ModoLectorHuellas { get; set; }
+        public string TesteoPestillo { get; set; }
+        public string TipoDispositivoAutonomo { get; set; }
+        public int? FkGrupoDispositivos { get; set; }
+        public int? TmpAperturaAutonomo { get; set; }
+        public int? TmpAlarmaAutonomo { get; set; }
+        public int? FkCamara { get; set; }
+        public int? EstadoHorarioLector { get; set; }
+        public string BateriaBaja { get; set; }
+        public int? TipoTecnologiaLector { get; set; }
+        public string OcultarPorIndependientes { get; set; }
+        public string AlarmaViolacionApb { get; set; }
+        public int? PrioridadVa { get; set; }
+        public string AlarmaTarjetaCaducada { get; set; }
+        public int? PrioridadTc { get; set; }
+        public string AlarmaFueraHorarioAcceso { get; set; }
+        public int? PrioridadFha { get; set; }
+        public string AlarmaNipincorrecto { get; set; }
+        public int? PrioridadNi { get; set; }
+        public int? TmpImpulsoAperturaAutonomo { get; set; }
+        public string AccesoDual { get; set; }
+        public int? TmpAccesoDual { get; set; }
+        public string Coaccion { get; set; }
+        public string MercPeligrosas { get; set; }
+        public string LevSinPapeles { get; set; }
+        public string PermisoAccesoListaNegra { get; set; }
+        public string RecintoLsp { get; set; }
+        public string PermitirAperturaRemota { get; set; }
+        public string PermitirImpulsoRemoto { get; set; }
+        public string EntradasParoPorBiestable { get; set; }
+        public string EntradasParoPorArmado { get; set; }
+        public int? TmpParoArmado { get; set; }
+        public int? FormatoMatricula { get; set; }
+        public string CamaraEnlazadaMensajeAccesos { get; set; }
+        public int? PrioridadTamper { get; set; }
+    }
+}

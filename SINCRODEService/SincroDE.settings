@@ -1,0 +1,30 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="SINCRODEService" GeneratedClassName="SincroDE">
+  <Profiles />
+  <Settings>
+    <Setting Name="DassnetAccess" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">server=localhost;database=DASSNET;uid=usuario;pwd=xxx"</Value>
+    </Setting>
+    <Setting Name="EvalosAccess" Type="System.String" Scope="Application">
+      <Value Profile="(Default)"> https://rutaevalos/</Value>
+    </Setting>
+    <Setting Name="FTPLoga" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">ftp://gentalia.ddns.net/SincronizadorDE/</Value>
+    </Setting>
+    <Setting Name="RutaFileTemp" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">D:\InOut</Value>
+    </Setting>
+    <Setting Name="SQLConexion" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">server=localhost;database=SINCRODEDB;uid=usuario;pwd=xxx"</Value>
+    </Setting>
+    <Setting Name="ExcetuteTime1" Type="System.DateTime" Scope="Application">
+      <Value Profile="(Default)">12/11/2019 10:00:00</Value>
+    </Setting>
+    <Setting Name="ExcetuteTime2" Type="System.DateTime" Scope="Application">
+      <Value Profile="(Default)">12/11/2019 14:00:00</Value>
+    </Setting>
+    <Setting Name="ExcetuteTime3" Type="System.DateTime" Scope="Application">
+      <Value Profile="(Default)">12/11/2019 21:00:00</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
