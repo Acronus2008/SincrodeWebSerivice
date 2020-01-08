@@ -57,12 +57,6 @@
         </main>
     </div>
 
-    @*<footer class="border-top footer text-muted">
-            <div class="container">
-                &copy; 2020 - SACIR SINCRODE Web
-            </div>
-        </footer>*@
-
     <environment include="Development">
         <script src="~/lib/jquery/dist/jquery.js"></script>
         <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.js"></script>
@@ -77,55 +71,20 @@
     </environment>
     <script src="~/js/site.js" asp-append-version="true"></script>
 
-    <script>
-        (function () {
-            
-            $("#fechaWarning").hide();
+    <script src="~/lib/spin.js/spin.min.js"></script>
+    <link rel="stylesheet" href="~/lib/spin.js/css/spin.css" />
+    
+    <!--Spining loading for executor-->
+    <div id="loading">
+        <div id="loadingcontent">
+            <p id="loadingspinner">
+                <span style="color:#ffffff;">Ejecutando proceso de marcaje...</span>
+            </p>
+        </div>
+    </div>
 
-            var fechaInicio = null;
-            var fechaFin = null;
-
-            $("#fechaInicio").on("change", function (event) {
-                fechaInicio = event.target.valueAsNumber;
-                validatorWarning(fechaInicio, fechaFin);
-            });
-
-            $("#fechaFin").on("change", function (event) {
-                fechaFin = event.target.valueAsNumber;
-                validatorWarning(fechaInicio, fechaFin);
-            });
-
-        })();
-
-        function validatorWarning(fechaInicio, fechaFin) {
-            
-            if (fechaInicio > fechaFin) {
-                $("#fechaWarning").show("slow");
-                return;
-            }
-
-            $("#fechaWarning").hide("slow");
-
-            return;
-        }
-
-        function onSubmitValidator() {
-            var fechaInicio = $("#fechaInicio").val();
-            var fechaFin = $("#fechaFin").val();
-
-            console.log("fechaInicio > fechaFin: " + fechaInicio + " > " + fechaFin + " > "+ (fechaInicio > fechaFin));
-
-            if (fechaInicio > fechaFin) {
-                
-                $("fechaWarning").show("slow");
-                return false;
-            }
-            
-            $("fechaWarning").hide("fast");
-            return true;
-        }
-    </script>
-
+    <!--Executor script validator-->
+    <script src="~/js/executor/executor.js"></script>
 
     @RenderSection("Scripts", required: false)
 
