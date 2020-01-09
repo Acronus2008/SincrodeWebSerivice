@@ -21,7 +21,7 @@ namespace SINCRODEService
             {
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return new DateTime();
             }

@@ -362,10 +362,6 @@ namespace SINCRODEService
 
                 //Envío de los datos de marcaje al WS de Evalos
                 jsonattendance = JsonConvert.SerializeObject(attendances.ToArray());
-                if (config["ShowDetailsLog"].ToUpper() == "TRUE")
-                {
-                    Log("Json usado en el envío al WS de marcaje " + jsonattendance);
-                }
                 wsEvalosMethod = config["EvalosAccess"] + "booking/attendance/";
                 if (jsonattendance != "[]")
                 {

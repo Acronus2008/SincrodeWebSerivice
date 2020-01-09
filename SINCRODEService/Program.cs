@@ -7,7 +7,6 @@ namespace SINCRODEService
 {
     class Program
     {
-        private readonly ILog log;
         private const string _logFileLocation = @"C:\temp\servicelog.txt";
 
         private static void Log(string logMessage)
