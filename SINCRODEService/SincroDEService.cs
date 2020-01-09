@@ -298,31 +298,22 @@ namespace SINCRODEService
                 try
                 {
                     fechaini = DateTime.ParseExact(paramFecini +" 00:00:00", "yyyy-MM-dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
-                }
-                catch (Exception)
-                {
-                    setfechas = false;
-                    //Log("Formato del parámetro FechaInicialPrueba " + paramFecini + " incorrecto 'yyyyMMdd' : " + ex.ToString());
-                }
-                try
-                {
                     fechafin = DateTime.ParseExact(paraFecFin + " 23:59:59", "yyyy-MM-dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
                 }
                 catch (Exception)
                 {
                     setfechas = false;
-                    //Log("Formato del parámetro FechaFinalPrueba " + paraFecFin + " incorrecto 'yyyyMMdd' : " + ex.ToString());
                 }
 
-                if (!setfechas)
-                {
-                    Log("Fechas de parámetro incorrectas. Se procesa a partir de a última fecha procesada");
-                    MarcajesDassnet.ProcesaMarcajes();
-                }
-                else
+                if (setfechas)
                 {
                     Log("Se procesa desde " + fechaini + " hasta " + fechafin);
                     MarcajesDassnet.ProcesaMarcajesRango(fechaini, fechafin);
+                }
+                else
+                {
+                    Log("Fechas de parámetro incorrectas. Se procesa a partir de la última fecha procesada");
+                    MarcajesDassnet.ProcesaMarcajes();
                 }
             }
 
