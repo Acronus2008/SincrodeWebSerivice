@@ -16,6 +16,11 @@ namespace SINCRODEWebApp.Controllers
 
         public IActionResult ShowLogs(int id)
         {
+            if (!HttpContext.User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Index", "Login");
+            }
+
             ViewData["ProccessId"] = id;
             return View();
         }
