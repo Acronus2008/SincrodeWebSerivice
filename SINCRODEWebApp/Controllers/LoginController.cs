@@ -21,10 +21,12 @@ namespace SINCRODEWebApp.Controllers
             var _username = form["Username"].ToString();
             var _password = form["Password"].ToString();
 
-            bool IsUserLoggedWithActiveDirectory = ADHelper.ActiveDirectoryLogin(_username, _password);
+            ADAuthentication aDAuthentication = ADHelper.ActiveDirectoryLogin(_username, _password);
 
-            if (!IsUserLoggedWithActiveDirectory)
+            if (!aDAuthentication.IsAuthenticated)
             {
+                ViewData["Message"] = aDAuthentication.Message;
+               
                 return View(nameof(Index));
             }
 

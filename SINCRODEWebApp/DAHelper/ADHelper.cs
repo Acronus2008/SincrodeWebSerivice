@@ -17,7 +17,7 @@ namespace SINCRODEWebApp.DAHelper
             _configuration = GetConfiguration();
         }
 
-        public static bool ActiveDirectoryLogin(string username, string password)
+        public static ADAuthentication ActiveDirectoryLogin(string username, string password)
         {
             string _server = GetActiveDirectoryServer();
             string _user = GetActiveDirectoryUser(username);
@@ -30,14 +30,14 @@ namespace SINCRODEWebApp.DAHelper
             {
                 if (validator.NativeObject.Equals(null))
                 {
-                    return false;
+                    return new ADAuthentication() { IsAuthenticated = false, Message = string.Format("Usuario o contraseña incorrecta {0}", _user) };
                 }
 
-                return true;
+                return new ADAuthentication() { IsAuthenticated = true, Message = "OK" } ;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return false;
+                return new ADAuthentication() { IsAuthenticated = false, Message = string.Format("Error autenticando el usuario {0}\nError: {1}", _user, ex.Message) };
             }
         }
 

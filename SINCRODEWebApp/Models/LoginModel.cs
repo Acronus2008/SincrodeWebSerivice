@@ -15,5 +15,8 @@ namespace SINCRODEWebApp.Models
         [Required(ErrorMessage ="La contraseña es requerida")]
         [Display(Name ="Contraseña")]
         public string Password { get; set; }
+
+        public bool IsAuthenticated { get; set; }
+        public string Message { get; set; }
     }
 }
