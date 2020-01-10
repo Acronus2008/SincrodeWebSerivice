@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.AzureAD.UI;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -34,50 +35,20 @@ namespace SINCRODEWebApp
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
-            services.AddAuthentication(AzureADDefaults.AuthenticationScheme)
-                .AddAzureAD(options => Configuration.Bind("AzureAd", options));
-
-            services.Configure<OpenIdConnectOptions>(AzureADDefaults.OpenIdScheme, options =>
-            {
-                options.TokenValidationParameters = new TokenValidationParameters
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+            .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme,
+                options =>
                 {
-                    // Instead of using the default validation (validating against a single issuer value, as we do in
-                    // line of business apps), we inject our own multitenant validation logic
-                    ValidateIssuer = false,
-
-                    // If the app is meant to be accessed by entire organizations, add your issuer validation logic here.
-                    //IssuerValidator = (issuer, securityToken, validationParameters) => {
-                    //    if (myIssuerValidationLogic(issuer)) return issuer;
-                    //}
-                };
-
-                options.Events = new OpenIdConnectEvents
-                {
-                    OnTicketReceived = context =>
-                    {
-                        // If your authentication logic is based on users then add your logic here
-                        return Task.CompletedTask;
-                    },
-                    OnAuthenticationFailed = context =>
-                    {
-                        context.Response.Redirect("/Error");
-                        context.HandleResponse(); // Suppress the exception
-                        return Task.CompletedTask;
-                    },
-                    // If your application needs to do authenticate single users, add your user validation below.
-                    //OnTokenValidated = context =>
-                    //{
-                    //    return myUserValidationLogic(context.Ticket.Principal);
-                    //}
-                };
-            });
+                    options.LoginPath = new PathString("/Login/Index");
+                    options.AccessDeniedPath = new PathString("/Login/Denied");
+                });
 
             services.AddMvc(options =>
             {
-                var policy = new AuthorizationPolicyBuilder()
-                    .RequireAuthenticatedUser()
-                    .Build();
-                options.Filters.Add(new AuthorizeFilter(policy));
+                //var policy = new AuthorizationPolicyBuilder()
+                //    .RequireAuthenticatedUser()
+                //    .Build();
+                //options.Filters.Add(new AuthorizeFilter(policy));
             })
             .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
@@ -106,7 +77,7 @@ namespace SINCRODEWebApp
             {
                 routes.MapRoute(
                     name: "default",
-                    template: "{controller=Process}/{action=Index}/{id?}");
+                    template: "{controller=Login}/{action=Index}/{id?}");
             });
         }
     }
