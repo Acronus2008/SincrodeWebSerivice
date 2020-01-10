@@ -83,8 +83,6 @@ function onSubmitValidator() {
     var fechaInicio = $("#fechaInicio").val();
     var fechaFin = $("#fechaFin").val();
 
-    console.log("fechaInicio > fechaFin: " + fechaInicio + " > " + fechaFin + " > " + (fechaInicio > fechaFin));
-
     if (!fechaInicio || !fechaFin) {
         $("#fechaWarning").show("slow");
         return;
