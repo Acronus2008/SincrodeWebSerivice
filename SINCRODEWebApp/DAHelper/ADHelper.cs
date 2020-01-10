@@ -19,9 +19,9 @@ namespace SINCRODEWebApp.DAHelper
 
         public static bool ActiveDirectoryLogin(string username, string password)
         {
-            string _server = string.Format("LDAP://{0}:{1}/{2}", GetActiveDirectoryServerHost(), GetActiveDirectoryServerPort(), GetActiveDirectoryDomainController());
-            string _user = string.Format("uid={0},{1}", username, GetActiveDirectoryDomainController());
-            
+            string _server = GetActiveDirectoryServer();
+            string _user = GetActiveDirectoryUser(username);
+
             //string ldapServer = "LDAP://ldap.forumsys.com:389/dc=example,dc=com";
 
             DirectoryEntry validator = new DirectoryEntry(_server, _user, password, AuthenticationTypes.ServerBind);
@@ -39,6 +39,16 @@ namespace SINCRODEWebApp.DAHelper
             {
                 return false;
             }
+        }
+
+        private static string GetActiveDirectoryUser(string username)
+        {
+            return string.Format("uid={0},{1}", username, GetActiveDirectoryDomainController());
+        }
+
+        private static string GetActiveDirectoryServer()
+        {
+            return string.Format("LDAP://{0}:{1}/{2}", GetActiveDirectoryServerHost(), GetActiveDirectoryServerPort(), GetActiveDirectoryDomainController());
         }
 
         private static string GetActiveDirectoryDomainController()
