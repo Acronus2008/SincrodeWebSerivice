@@ -51,6 +51,13 @@
             </div>
         </nav>
     </header>
+
+
+
+    <div id="myModal" class="modal fade" role="dialog">
+        <partial name="_Executor" />
+    </div>
+
     <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()
@@ -73,7 +80,7 @@
 
     <script src="~/lib/spin.js/spin.min.js"></script>
     <link rel="stylesheet" href="~/lib/spin.js/css/spin.css" />
-    
+
     <!--Spining loading for executor-->
     <div id="loading">
         <div id="loadingcontent">
