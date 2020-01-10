@@ -31,7 +31,7 @@
                 radius: 7, // The radius of the inner circle
                 scale: 0.95, // Scales overall size of the spinner
                 corners: 1, // Corner roundness (0..1)
-                color: '#ffffff', // CSS color or array of colors
+                color: '#eeeeee', // CSS color or array of colors
                 fadeColor: 'transparent', // CSS color or array of colors
                 speed: 0.6, // Rounds per second
                 rotate: 33, // The rotation offset
