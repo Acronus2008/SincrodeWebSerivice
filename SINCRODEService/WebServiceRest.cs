@@ -67,11 +67,17 @@ namespace SINCRODEService
             }
             //Log("Endpoint de la creación de empleado en WS Evalos" + fullendpoint);
 
+            IConfiguration config = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json", true, true)
+                .Build();
+
             request = WebRequest.Create(fullendpoint) as HttpWebRequest;
             request.Timeout = 10 * 1000;
             request.Method = method;
             request.ContentLength = data.Length;
             request.ContentType = "application/json; charset= utf8-8";
+            request.Headers.Add("user", config["EvalosUser"]);
+            request.Headers.Add("password", config["EvalosPassword"]);
 
             string credenttials = Convert.ToBase64String(ASCIIEncoding.ASCII.GetBytes("usuario:clave"));
             request.Headers.Add("Authorization", "Basic" + credenttials);
