@@ -48,7 +48,9 @@ namespace SINCRODEService
 
                     Stream responseStream = response.GetResponseStream();
 
-                    SaveStreamAsFile(carpetaDestino, responseStream, "DATOSLOGA_V2.xls");
+                    string fileName = remoteFile.Substring(remoteFile.LastIndexOf("/") + 1);
+
+                    SaveStreamAsFile(carpetaDestino, responseStream, fileName);
                     Log("Fichero LOGA salvado en: " + carpetaDestino);
                     response.Close();
                 }

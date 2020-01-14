@@ -110,6 +110,9 @@ namespace SINCRODEService
             string usuario = config["FTPuser"];
             string password = config["FTPPassword"];
             string carpetaDestino = config["RutaFileTemp"];// "D:\\InOut";
+            string remoteFile = config["FileLoga"];
+
+            string fileName = remoteFile.Substring(remoteFile.LastIndexOf("/") + 1);
 
             int NumberOfRetries = Convert.ToInt16(config["CantDeReintentos"]);
             int DelayOnRetry = 1000;
@@ -118,7 +121,7 @@ namespace SINCRODEService
             {
                 try
                 {
-                    _listaLoga = ProcessWorkbook(carpetaDestino + "\\DATOSLOGA_V2.xls");
+                    _listaLoga = ProcessWorkbook(carpetaDestino + "\\" + fileName);
                     Log("Fichero LOGA procesado");
                     break; // When done we can break loop
                 }
