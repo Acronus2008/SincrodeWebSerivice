@@ -21,6 +21,7 @@ namespace SINCRODEService
         public static string GetEmployee(string NifDni, string endpoint)
         {
             IConfiguration config = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json", true, true)
                 .Build();
 
@@ -68,6 +69,7 @@ namespace SINCRODEService
             //Log("Endpoint de la creación de empleado en WS Evalos" + fullendpoint);
 
             IConfiguration config = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json", true, true)
                 .Build();
 

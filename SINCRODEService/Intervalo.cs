@@ -9,10 +9,6 @@ namespace SINCRODEService
     {
         private const string _logFileLocation = @"C:\temp\servicelog.txt";
 
-        IConfiguration config = new ConfigurationBuilder()
-            .AddJsonFile("appsettings.json", true, true)
-            .Build();
-
         private static void Log(string logMessage)
         {
             Directory.CreateDirectory(Path.GetDirectoryName(_logFileLocation));
@@ -22,6 +18,7 @@ namespace SINCRODEService
         public static double SetNextIntervalo()//(DateTime time1, DateTime time2, DateTime time3)
         {
             IConfiguration config = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json", true, true)
                 .Build();
 

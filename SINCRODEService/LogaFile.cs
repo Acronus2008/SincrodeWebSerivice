@@ -22,6 +22,7 @@ namespace SINCRODEService
         public static void DownloadFile(string servidorftp, string usuario, string password, string carpetaDestino)
         {
             IConfiguration config = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json", true, true)
                 .Build();
 

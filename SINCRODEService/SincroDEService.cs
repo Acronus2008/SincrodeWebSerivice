@@ -34,6 +34,7 @@ namespace SINCRODEService
             base.OnStart(args);
 
             IConfiguration config = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json", true, true)
                 .Build();
 
@@ -74,6 +75,7 @@ namespace SINCRODEService
         {
             timer.Stop();
             IConfiguration config = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json", true, true)
                 .Build();
 
@@ -101,6 +103,7 @@ namespace SINCRODEService
         private void Ejecutar()
         {
             IConfiguration config = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json", true, true)
                 .Build();
 
