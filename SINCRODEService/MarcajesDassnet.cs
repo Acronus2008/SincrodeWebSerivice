@@ -251,6 +251,8 @@ namespace SINCRODEService
             //Creo el json con los datos q debo enviarle al ws
             string jsonattendance;
             string wsEvalosMethod;
+            string username = config["EvalosUser"];
+            string password = config["EvalosPassword"];
 
             int cantTotalRegistros = 0;
             int cantRegistroPro = 0;
@@ -307,7 +309,7 @@ namespace SINCRODEService
                         if (jsonattendance != "[]")
                         {
                             //jsonResponse = WebServiceRest.PostRequestJson(wsEvalosMethod, jsonattendance, "POST");
-                            var httpWebResponse = WebServiceRest.PutPostRequest(wsEvalosMethod, jsonattendance, "POST");
+                            var httpWebResponse = WebServiceRest.PutPostRequest(wsEvalosMethod, username, password, jsonattendance, "POST");
 
                             //Log("Respuesta del Post " + httpWebResponse.StatusCode + "" + httpWebResponse.StatusDescription);
                             string messagelog;
@@ -371,7 +373,7 @@ namespace SINCRODEService
                     }
 
                     //jsonResponse = WebServiceRest.PostRequestJson(wsEvalosMethod, jsonattendance, "POST");
-                    var httpWebResponse = WebServiceRest.PutPostRequest(wsEvalosMethod, jsonattendance, "POST");
+                    var httpWebResponse = WebServiceRest.PutPostRequest(wsEvalosMethod, username, password, jsonattendance, "POST");
                     //Log("Respuesta del Post "+ httpWebResponse.StatusCode + " "+httpWebResponse.StatusDescription);
 
                     string messagelog;

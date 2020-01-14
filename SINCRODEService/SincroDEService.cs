@@ -203,6 +203,9 @@ namespace SINCRODEService
 
                             #region Consumir el WebService de Evalos para cada empleado que se crea
                             var wsEvalosMethod = config["EvalosAccess"] + "employee/";
+                            string userEvalos = config["EvalosUser"];
+                            string passwordEvalos = config["EvalosPassword"];
+
                             var tracews = "Get Employee: URL: " + wsEvalosMethod + " DNI: " + campo.NifDni;
                             try
                             {
@@ -226,7 +229,7 @@ namespace SINCRODEService
                                     tracews = "Set Employee: URL: " + wsEvalosMethod + " DNI: " + campo.NifDni;
                                     string employeejson = JsonConvert.SerializeObject(employeeData);
                                     //var jsonResponse = WebServiceRest.PutRequestJson(campo.NifDni, wsEvalosMethod, employeejson, "PUT");
-                                    var httpWebResponse = WebServiceRest.PutPostRequest(wsEvalosMethod, employeejson, "PUT", campo.NifDni);
+                                    var httpWebResponse = WebServiceRest.PutPostRequest(wsEvalosMethod, userEvalos, passwordEvalos, employeejson, "PUT", campo.NifDni);
                                     
                                     //Log("Respuesta del Post " + httpWebResponse.StatusCode + "" + httpWebResponse.StatusDescription);
 

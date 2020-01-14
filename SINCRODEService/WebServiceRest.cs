@@ -55,7 +55,7 @@ namespace SINCRODEService
         //    return jsonResponse;
         //}
 
-        public static HttpWebResponse PutPostRequest(string endpoint, string json, string method = "POST", string NifDni = "")
+        public static HttpWebResponse PutPostRequest(string endpoint, string username, string password, string json, string method = "POST", string NifDni = "")
         {
             byte[] data = UTF8Encoding.UTF8.GetBytes(json);
             HttpWebRequest request;
@@ -76,8 +76,8 @@ namespace SINCRODEService
             request.Method = method;
             request.ContentLength = data.Length;
             request.ContentType = "application/json; charset= utf8-8";
-            request.Headers.Add("user", config["EvalosUser"]);
-            request.Headers.Add("password", config["EvalosPassword"]);
+            string encoded = System.Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes(username + ":" + password));
+            request.Headers.Add("Authorization", "Basic " + encoded);
 
             string credenttials = Convert.ToBase64String(ASCIIEncoding.ASCII.GetBytes("usuario:clave"));
             request.Headers.Add("Authorization", "Basic" + credenttials);
