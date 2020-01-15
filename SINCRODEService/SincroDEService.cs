@@ -203,7 +203,7 @@ namespace SINCRODEService
                                 string employee;
                                 employee = WebServiceRest.GetEmployee(wsEvalosMethod, userEvalos, passwordEvalos, campo.NifDni);
                                 //Log("Se obtuvo el employee del WS: " + employee);
-                                if (employee is null)
+                                if (employee==null || employee==string.Empty || employee=="null")
                                 {
                                     //Mando a crear el empleado en Evalos
                                     //Creo el json con los datos q debo enviarle al ws
@@ -220,12 +220,12 @@ namespace SINCRODEService
                                     tracews = "Set Employee: URL: " + wsEvalosMethod + " DNI: " + campo.NifDni;
                                     string employeejson = JsonConvert.SerializeObject(employeeData);
                                     var httpWebResponse = WebServiceRest.PutPostRequest(wsEvalosMethod, userEvalos, passwordEvalos, employeejson, "PUT", campo.NifDni);
-                                    
-                                    //Log("Respuesta del Post " + httpWebResponse.StatusCode + "" + httpWebResponse.StatusDescription);
 
+                                    //Log("Respuesta del Post " + httpWebResponse.StatusCode + "" + httpWebResponse.StatusDescription);
+                                    Log("Enviado al PUT de empleado " + employeejson);
                                     if (httpWebResponse.StatusCode == HttpStatusCode.OK)
                                     {
-                                        ;//Log("Respuesta del POST " + httpWebResponse.StatusCode +" => "+ httpWebResponse.StatusDescription);
+                                        Log("Respuesta OK del PUT de empleado " + employeejson);
                                     }
                                     else
                                     {
