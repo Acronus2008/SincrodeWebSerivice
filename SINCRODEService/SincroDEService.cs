@@ -201,7 +201,7 @@ namespace SINCRODEService
                             try
                             {
                                 string employee;
-                                employee = WebServiceRest.GetEmployee(campo.NifDni, wsEvalosMethod);
+                                employee = WebServiceRest.GetEmployee(wsEvalosMethod, userEvalos, passwordEvalos, campo.NifDni);
                                 //Log("Se obtuvo el employee del WS: " + employee);
                                 if (employee is null)
                                 {
@@ -219,7 +219,6 @@ namespace SINCRODEService
                                     };
                                     tracews = "Set Employee: URL: " + wsEvalosMethod + " DNI: " + campo.NifDni;
                                     string employeejson = JsonConvert.SerializeObject(employeeData);
-                                    //var jsonResponse = WebServiceRest.PutRequestJson(campo.NifDni, wsEvalosMethod, employeejson, "PUT");
                                     var httpWebResponse = WebServiceRest.PutPostRequest(wsEvalosMethod, userEvalos, passwordEvalos, employeejson, "PUT", campo.NifDni);
                                     
                                     //Log("Respuesta del Post " + httpWebResponse.StatusCode + "" + httpWebResponse.StatusDescription);

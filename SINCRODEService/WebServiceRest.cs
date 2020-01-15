@@ -18,13 +18,16 @@ namespace SINCRODEService
             File.AppendAllText(_logFileLocation, DateTime.Now.ToString() + " : " + logMessage + Environment.NewLine);
         }
 
-        public static string GetEmployee(string NifDni, string endpoint)
+        public static string GetEmployee(string endpoint, string username, string password, string NifDni)
         {
             string url = endpoint + NifDni;
             //Log("Acceso al Get del WS de Evalos: "+ url);
             var uri = new Uri(url);
-            var json = new WebClient().DownloadString(uri);
-            
+            var client = new WebClient();
+            string encoded = System.Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes(username + ":" + password));
+            client.Headers.Add("Authorization", "Basic " + encoded);
+            var json = client.DownloadString(uri);
+
             return json;
         }
 
