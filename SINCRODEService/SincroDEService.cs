@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System.Timers;
 using System.Net;
+using SINCRODEService.Config;
 
 //using System.Threading;
 
@@ -69,21 +70,12 @@ namespace SINCRODEService
         public void OnTimer(object sender, ElapsedEventArgs args)
         {
             timer.Stop();
-            IConfiguration config = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", true, true)
-                .Build();
 
-            // TODO: Insert monitoring activities here.
             Log("Ejecutando el Timer");
-
-            //DateTime time1 = DateTime.ParseExact(config["ExcetuteTime1"], "HH:mm:ss", CultureInfo.InvariantCulture);
-            //DateTime time2 = DateTime.ParseExact(config["ExcetuteTime2"], "HH:mm:ss", CultureInfo.InvariantCulture);
-            //DateTime time3 = DateTime.ParseExact(config["ExcetuteTime3"], "HH:mm:ss", CultureInfo.InvariantCulture);
 
             Ejecutar();
 
-            double proximoIntervalo = Intervalo.SetNextIntervalo();// (time1, time2, time3);
+            double proximoIntervalo = Intervalo.SetNextIntervalo();
             Log("Próxima fecha de ejecución " + DateTime.Now.AddMilliseconds(proximoIntervalo));
             timer.Interval = proximoIntervalo;
             timer.Start();
@@ -97,10 +89,7 @@ namespace SINCRODEService
 
         private void Ejecutar()
         {
-            IConfiguration config = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", true, true)
-                .Build();
+            IConfiguration config = ConfigHelper.GetConfiguration();
 
             #region Descargar y guardar fichero del FTP
             //string servidorftp = "ftp://gentalia.ddns.net/SincronizadorDE/DATOSLOGA_V2.xls";
@@ -115,6 +104,7 @@ namespace SINCRODEService
             int NumberOfRetries = Convert.ToInt16(config["CantDeReintentos"]);
             int DelayOnRetry = 1000;
             DownloadFile(servidorftp, usuario, password, carpetaDestino);
+
             for (int i = 1; i <= NumberOfRetries; ++i)
             {
                 try

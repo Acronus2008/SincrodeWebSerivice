@@ -20,11 +20,6 @@ namespace SINCRODEService
 
         public static string GetEmployee(string NifDni, string endpoint)
         {
-            IConfiguration config = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", true, true)
-                .Build();
-
             string url = endpoint + NifDni;
             //Log("Acceso al Get del WS de Evalos: "+ url);
             var uri = new Uri(url);
@@ -67,11 +62,6 @@ namespace SINCRODEService
                 fullendpoint += NifDni;
             }
             //Log("Endpoint de la creación de empleado en WS Evalos" + fullendpoint);
-
-            IConfiguration config = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", true, true)
-                .Build();
 
             request = WebRequest.Create(fullendpoint) as HttpWebRequest;
             request.Timeout = 10 * 1000;

@@ -6,6 +6,7 @@ using System.Text;
 using ExcelDataReader;
 using Microsoft.Extensions.Configuration;
 using Renci.SshNet;
+using SINCRODEService.Config;
 
 namespace SINCRODEService
 {
@@ -21,10 +22,7 @@ namespace SINCRODEService
 
         public static void DownloadFile(string servidorftp, string usuario, string password, string carpetaDestino)
         {
-            IConfiguration config = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", true, true)
-                .Build();
+            IConfiguration config = ConfigHelper.GetConfiguration();
 
             string remoteFile = config["FileLoga"];
 

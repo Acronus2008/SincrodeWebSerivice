@@ -25,10 +25,7 @@ namespace SINCRODEService
         //Método llamado cuando el sincrfode está en producción de forma automática
         public static void ProcesaMarcajes()
         {
-            IConfiguration config = new ConfigurationBuilder()
-             .SetBasePath(Directory.GetCurrentDirectory())
-             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-             .Build();
+            IConfiguration config = ConfigHelper.GetConfiguration();
 
             //Recorro todos empleados de TBL_EMPLEADOS para consultar su marcaje
             try
