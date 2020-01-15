@@ -33,22 +33,17 @@ namespace SINCRODEService
             Log("Iniciando");
             base.OnStart(args);
 
-            IConfiguration config = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", true, true)
-                .Build();
-
             try
             {
                 // Set up a timer that triggers.
-                timer.Interval = Intervalo.SetNextIntervalo();// (time1, time2, time3);
+                timer.Interval = Intervalo.SetNextIntervalo();
                 Log("Primera fecha de ejecución: " + DateTime.Now.AddMilliseconds(timer.Interval));
                 timer.Elapsed += OnTimer;
                 timer.Start();
             }
             catch (Exception ex)
             {
-                Log("Error iniciando el trigger: "+ex.ToString());
+                Log("Error iniciando el timer: " + ex.ToString());
             }
 
             //Ejecutar();

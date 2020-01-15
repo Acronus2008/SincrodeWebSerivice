@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using SINCRODEService.Config;
 using System;
 using System.Globalization;
 using System.IO;
@@ -15,12 +16,9 @@ namespace SINCRODEService
             File.AppendAllText(_logFileLocation, DateTime.Now.ToString() + " : " + logMessage + Environment.NewLine);
         }
 
-        public static double SetNextIntervalo()//(DateTime time1, DateTime time2, DateTime time3)
+        public static double SetNextIntervalo()
         {
-            IConfiguration config = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", true, true)
-                .Build();
+            IConfiguration config = ConfigHelper.GetConfiguration();
 
             DateTime time1 = DateTime.ParseExact(config["ExcetuteTime1"], "HH:mm:ss", CultureInfo.InvariantCulture);
             DateTime time2 = DateTime.ParseExact(config["ExcetuteTime2"], "HH:mm:ss", CultureInfo.InvariantCulture);
