@@ -229,7 +229,6 @@ namespace SINCRODEService
 
                                 if (httpWebResponse.StatusCode == HttpStatusCode.OK)
                                 {
-                                    Log("Respuesta OK del PUT de empleado " + employeejson);
                                     creados++;
                                 }
                                 else

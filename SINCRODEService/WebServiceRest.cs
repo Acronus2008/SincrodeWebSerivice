@@ -20,7 +20,7 @@ namespace SINCRODEService
 
         public static string GetEmployee(string endpoint, string username, string password, string NifDni)
         {
-            string url = endpoint + NifDni;
+            string url = endpoint + "/" + NifDni;
             //Log("Acceso al Get del WS de Evalos: "+ url);
             var uri = new Uri(url);
             var client = new WebClient();
