@@ -198,7 +198,7 @@ namespace SINCRODEService
                     foreach (var empleado in context.TblEmpleados)
                     {
                         #region Consumir el WebService de Evalos para cada empleado que se crea
-                        var wsEvalosMethod = config["EvalosAccess"] + "employee/";
+                        var wsEvalosMethod = config["EvalosAccess"] + "employee";
                         string userEvalos = config["EvalosUser"];
                         string passwordEvalos = config["EvalosPassword"];
 
