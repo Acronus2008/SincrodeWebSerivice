@@ -64,7 +64,6 @@ namespace SINCRODEService
             {
                 fullendpoint += NifDni;
             }
-            //Log("Endpoint de la creación de empleado en WS Evalos" + fullendpoint);
 
             request = WebRequest.Create(fullendpoint) as HttpWebRequest;
             request.Timeout = 10 * 1000;

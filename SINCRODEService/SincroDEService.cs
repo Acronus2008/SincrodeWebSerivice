@@ -129,8 +129,7 @@ namespace SINCRODEService
             #region Salvar empleado en la base de datos si no existe
             try
             {
-                //listaLOGA.ForEach(l => Log(l.Nombre));
-                int employeeCount;
+                bool employeeFound;
                 int encontrados = 0;
                 int creados = 0;
                 using (var context = new SINCRODEDBContext())
@@ -139,20 +138,21 @@ namespace SINCRODEService
 
                     foreach (CamposLOGA campo in _listaLoga)
                     {
-                        employeeCount = context.TblEmpleados
-                                                      .Where(s => s.DniEmp == campo.NifDni)
-                                                      .Count();
+                        employeeFound = context.TblEmpleados.Where(s => s.DniEmp == campo.NifDni).Any();
 
                         //Si no encuentra el empleado lo inserta
-                        if (employeeCount == 0)
+                        if (employeeFound)
+                        {
+                            encontrados++;
+                        }
+                        else
                         {
                             //Insertar un nuevo empleado
-                            //Log("maxidEmp " + maxidEmp);
                             if (creados == 0)//solo pongo el log en la primera vuelta
                             {
                                 Log("Salvando empleados en la BD SincroDE");
                             }
-                           
+
                             var empl = new TblEmpleados()
                             {
                                 IdEmp = ++maxidEmp,
@@ -191,78 +191,72 @@ namespace SINCRODEService
                             };
                             context.TblEmpleados.Add(empl);
                             creados++;
-
-                            #region Consumir el WebService de Evalos para cada empleado que se crea
-                            var wsEvalosMethod = config["EvalosAccess"] + "employee/";
-                            string userEvalos = config["EvalosUser"];
-                            string passwordEvalos = config["EvalosPassword"];
-
-                            var tracews = "Get Employee: URL: " + wsEvalosMethod + " DNI: " + campo.NifDni;
-                            try
-                            {
-                                string employee;
-                                employee = WebServiceRest.GetEmployee(wsEvalosMethod, userEvalos, passwordEvalos, campo.NifDni);
-                                //Log("Se obtuvo el employee del WS: " + employee);
-                                if (employee==null || employee==string.Empty || employee=="null")
-                                {
-                                    //Mando a crear el empleado en Evalos
-                                    //Creo el json con los datos q debo enviarle al ws
-                                    var employeeData = new Employee
-                                    {
-                                        Code = campo.NifDni,
-                                        Description = campo.Nombre + " " + campo.Apellidos,
-                                        CodeArea = campo.UbicacionCentroTrabajo.Substring(0,15),
-                                        CodeDepartment = campo.CodigoDepartamento,
-                                        CodeCompany = campo.CodigoNegocio,
-                                        CodeSection = campo.CodigoSubNegocio,
-                                        CodeSchedule = campo.CoJornadaEmp.ToString()
-                                    };
-                                    tracews = "Set Employee: URL: " + wsEvalosMethod + " DNI: " + campo.NifDni;
-                                    string employeejson = JsonConvert.SerializeObject(employeeData);
-                                    var httpWebResponse = WebServiceRest.PutPostRequest(wsEvalosMethod, userEvalos, passwordEvalos, employeejson, "PUT", campo.NifDni);
-
-                                    //Log("Respuesta del Post " + httpWebResponse.StatusCode + "" + httpWebResponse.StatusDescription);
-                                    Log("Enviado al PUT de empleado " + employeejson);
-                                    if (httpWebResponse.StatusCode == HttpStatusCode.OK)
-                                    {
-                                        Log("Respuesta OK del PUT de empleado " + employeejson);
-                                    }
-                                    else
-                                    {
-                                        if (config["ShowDetailsLog"].ToUpper() == "TRUE")
-                                        {
-                                            Log("Respuesta erronea del POST " + httpWebResponse.StatusCode + " => " + httpWebResponse.StatusDescription);
-                                        }
-                                    }
-                                    ////Log("Respuesta del put "+jsonResponse);
-                                    //string putResponse = jsonResponse.Substring(1, 3);
-                                    //string putMessage = jsonResponse.Substring(4);
-                                    //if (putResponse == 200.ToString())
-                                    //{
-                                    //    ;//Log("Respuesta satisfactoria del PUT "+ putMessage);
-                                    //}
-                                    //else
-                                    //{
-                                    //    Log("Respuesta incorrecta del PUT " + putMessage);
-                                    //}
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                Log("Excepción en el consumo del WS de Evalos " + tracews + ": " + ex.ToString());
-                            }
-                            #endregion
-                        }
-                        else
-                        {
-                            encontrados++;
-                            //var employee = context.TblEmpleados
-                            //                              .Where(s => s.DniEmp == campo.NifDni)
-                            //                              .FirstOrDefault();
                         }
                     }
                     context.SaveChanges();
-                    Log("Total de empleados en el fichero LOGA: " + _listaLoga.Count + "   Empleados encontrados: " + encontrados + "  Empleados creados: " + creados);
+                    Log("Total de empleados en el fichero LOGA: " + _listaLoga.Count + "  Empleados encontrados: " + encontrados + "  Empleados creados: " + creados);
+
+
+                    Log("Enviando empleados al WS de Evalos");
+                    creados = 0;
+                    encontrados = 0;
+                    foreach (var empleado in context.TblEmpleados)
+                    {
+                        #region Consumir el WebService de Evalos para cada empleado que se crea
+                        var wsEvalosMethod = config["EvalosAccess"] + "employee/";
+                        string userEvalos = config["EvalosUser"];
+                        string passwordEvalos = config["EvalosPassword"];
+
+                        var tracews = "Get Employee: URL: " + wsEvalosMethod + " DNI: " + empleado.DniEmp;
+                        try
+                        {
+                            string employee;
+                            employee = WebServiceRest.GetEmployee(wsEvalosMethod, userEvalos, passwordEvalos, empleado.DniEmp);
+                            //Log("Se obtuvo el employee del WS: " + employee);
+                            if (employee == null || employee == string.Empty || employee == "null")
+                            {
+                                //Mando a crear el empleado en Evalos
+                                //Creo el json con los datos q debo enviarle al ws
+                                var employeeData = new Employee
+                                {
+                                    Code = empleado.DniEmp,
+                                    Description = empleado.NombreEmp + " " + empleado.ApellidosEmp,
+                                    CodeArea = empleado.UbicenEmp.Substring(0, 15),
+                                    CodeDepartment = empleado.CoddepEmp,
+                                    CodeCompany = empleado.CodnegocioEmp,
+                                    CodeSection = empleado.CodsubnegocioEmp,
+                                    CodeSchedule = empleado.CojornadaEmp.ToString()
+                                };
+                                string employeejson = JsonConvert.SerializeObject(employeeData);
+                                Log("Enviado al PUT de empleado " + employeejson);
+                                var httpWebResponse = WebServiceRest.PutPostRequest(wsEvalosMethod, userEvalos, passwordEvalos, employeejson, "PUT", empleado.DniEmp);
+
+                                //Log("Respuesta del Post " + httpWebResponse.StatusCode + "" + httpWebResponse.StatusDescription);
+                                if (httpWebResponse.StatusCode == HttpStatusCode.OK)
+                                {
+                                    Log("Respuesta OK del PUT de empleado " + employeejson);
+                                    creados++;
+                                }
+                                else
+                                {
+                                    if (config["ShowDetailsLog"].ToUpper() == "TRUE")
+                                    {
+                                        Log("Respuesta erronea del POST " + httpWebResponse.StatusCode + " => " + httpWebResponse.StatusDescription);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                encontrados++;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Log("Excepción en el consumo del WS de Evalos " + tracews + ": " + ex.ToString());
+                        }
+                        #endregion
+                    }
+                    Log("Total de empleados en la BD SincroDE: " + context.TblEmpleados.Count().ToString() + "  Empleados encontrados en Evalos: " + encontrados + "  Empleados enviados: " + creados);
                 }
             }
             catch (Exception ex)
