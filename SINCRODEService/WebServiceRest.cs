@@ -31,18 +31,12 @@ namespace SINCRODEService
             return json;
         }
 
-        public static HttpWebResponse PutPostRequest(string endpoint, string username, string password, string json, string method = "POST", string NifDni = "")
+        public static HttpWebResponse PutPostRequest(string endpoint, string username, string password, string json, string method = "POST")
         {
             byte[] data = UTF8Encoding.UTF8.GetBytes(json);
             HttpWebRequest request;
 
-            string fullendpoint = endpoint;
-            if (method == "PUT")
-            {
-                fullendpoint += NifDni;
-            }
-
-            request = WebRequest.Create(fullendpoint) as HttpWebRequest;
+            request = WebRequest.Create(endpoint) as HttpWebRequest;
             request.Timeout = 10 * 1000;
             request.Method = method;
             request.ContentLength = data.Length;

@@ -136,6 +136,7 @@ namespace SINCRODEService
                 {
                     int maxidEmp = context.TblEmpleados.Any() ? context.TblEmpleados.Max(e => e.IdEmp) : 0;
 
+                    Log("Salvando empleados en la BD SincroDE");
                     foreach (CamposLOGA campo in _listaLoga)
                     {
                         employeeFound = context.TblEmpleados.Where(s => s.DniEmp == campo.NifDni).Any();
@@ -147,12 +148,6 @@ namespace SINCRODEService
                         }
                         else
                         {
-                            //Insertar un nuevo empleado
-                            if (creados == 0)//solo pongo el log en la primera vuelta
-                            {
-                                Log("Salvando empleados en la BD SincroDE");
-                            }
-
                             var empl = new TblEmpleados()
                             {
                                 IdEmp = ++maxidEmp,
@@ -230,9 +225,8 @@ namespace SINCRODEService
                                 string employeejson = JsonConvert.SerializeObject(employeeData);
                                 Log("Enviado al PUT de empleado " + employeejson);
                                 tracews = "Put Employee: URL: " + wsEvalosMethod + " json: " + employeejson;
-                                var httpWebResponse = WebServiceRest.PutPostRequest(wsEvalosMethod, userEvalos, passwordEvalos, employeejson, "PUT", empleado.DniEmp);
+                                var httpWebResponse = WebServiceRest.PutPostRequest(wsEvalosMethod, userEvalos, passwordEvalos, employeejson, "PUT");
 
-                                //Log("Respuesta del Post " + httpWebResponse.StatusCode + "" + httpWebResponse.StatusDescription);
                                 if (httpWebResponse.StatusCode == HttpStatusCode.OK)
                                 {
                                     Log("Respuesta OK del PUT de empleado " + employeejson);
