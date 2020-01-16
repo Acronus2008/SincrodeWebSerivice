@@ -229,6 +229,7 @@ namespace SINCRODEService
                                 };
                                 string employeejson = JsonConvert.SerializeObject(employeeData);
                                 Log("Enviado al PUT de empleado " + employeejson);
+                                tracews = "Put Employee: URL: " + wsEvalosMethod + " json: " + employeejson;
                                 var httpWebResponse = WebServiceRest.PutPostRequest(wsEvalosMethod, userEvalos, passwordEvalos, employeejson, "PUT", empleado.DniEmp);
 
                                 //Log("Respuesta del Post " + httpWebResponse.StatusCode + "" + httpWebResponse.StatusDescription);

@@ -31,29 +31,6 @@ namespace SINCRODEService
             return json;
         }
 
-        //public static string PutRequestJson(string NifDni, string endpoint, string json, string method = "PUT")
-        //{
-        //    // Create string to hold JSON response
-        //    string jsonResponse = "200 OK";
-        //    //log.Info("LLamada " + method + " a la uri: " + endpoint);
-        //    using (var client = new WebClient())
-        //    {
-        //        //client.UseDefaultCredentials = true;
-        //        client.Headers.Add("Content-Type:application/json");
-        //        client.Headers.Add("Accept:application/json");
-        //        var uri = new Uri(endpoint+ NifDni);
-        //        //Log("LLamada " + method + " a la uri: " + uri.ToString());
-        //        //Log("Json: " + json);
-        //        jsonResponse = client.UploadString(uri, method, json);
-
-        //        if (jsonResponse.Length==0)
-        //        {
-        //            jsonResponse = "000 Respuesta vacía";
-        //        }
-        //    }
-        //    return jsonResponse;
-        //}
-
         public static HttpWebResponse PutPostRequest(string endpoint, string username, string password, string json, string method = "POST", string NifDni = "")
         {
             byte[] data = UTF8Encoding.UTF8.GetBytes(json);
@@ -73,12 +50,10 @@ namespace SINCRODEService
             string encoded = System.Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes(username + ":" + password));
             request.Headers.Add("Authorization", "Basic " + encoded);
 
-            string credenttials = Convert.ToBase64String(ASCIIEncoding.ASCII.GetBytes("usuario:clave"));
-            request.Headers.Add("Authorization", "Basic" + credenttials);
-
             Stream postStreams = request.GetRequestStream();
             postStreams.Write(data, 0, data.Length);
-
+            postStreams.Close();
+            
             HttpWebResponse response = request.GetResponse() as HttpWebResponse;
             StreamReader reader = new StreamReader(response.GetResponseStream());
             string body = reader.ReadToEnd();
