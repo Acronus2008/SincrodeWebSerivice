@@ -40,7 +40,7 @@ namespace SINCRODEService
             request.Timeout = 10 * 1000;
             request.Method = method;
             request.ContentLength = data.Length;
-            request.ContentType = "application/json; charset= utf8-8";
+            request.ContentType = "text/plain";
             string encoded = System.Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes(username + ":" + password));
             request.Headers.Add("Authorization", "Basic " + encoded);
 
