@@ -101,11 +101,11 @@ namespace SINCRODEWebApp.Controllers
                         {
                             return lstElements.OrderBy(prop.GetValue).Skip(skip).Take(pageSize).ToList();
                         }
-                        else
-                            return lstElements.OrderByDescending(prop.GetValue).Skip(skip).Take(pageSize).ToList();
+
+                        return lstElements.OrderByDescending(prop.GetValue).Skip(skip).Take(pageSize).ToList();
                     }
-                    else
-                        return lstElements;
+
+                    return lstElements;
                 }
             }
             return null;
@@ -133,11 +133,11 @@ namespace SINCRODEWebApp.Controllers
                         {
                             return lstElements.OrderBy(prop.GetValue).Skip(skip).Take(pageSize).ToList();
                         }
-                        else
-                            return lstElements.OrderByDescending(prop.GetValue).Skip(skip).Take(pageSize).ToList();
+
+                        return lstElements.OrderByDescending(prop.GetValue).Skip(skip).Take(pageSize).ToList();
                     }
-                    else
-                        return lstElements;
+
+                    return lstElements;
                 }
             }
             return null;
