@@ -7,18 +7,12 @@ using ExcelDataReader;
 using Microsoft.Extensions.Configuration;
 using Renci.SshNet;
 using SINCRODEService.Config;
+using static SINCRODEService.Program;
 
 namespace SINCRODEService
 {
     class LogaFile
     {
-        private const string _logFileLocation = @"C:\temp\servicelog.txt";
-
-        private static void Log(string logMessage)
-        {
-            Directory.CreateDirectory(Path.GetDirectoryName(_logFileLocation));
-            File.AppendAllText(_logFileLocation, DateTime.Now.ToString() + " : " + logMessage + Environment.NewLine);
-        }
 
         public static void DownloadFile(string servidorftp, string usuario, string password, string carpetaDestino)
         {

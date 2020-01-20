@@ -8,18 +8,24 @@ using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using SINCRODEService.Config;
 using SINCRODEService.Models;
+using static SINCRODEService.Program;
 
 namespace SINCRODEService
 {
+    class MarcajesResponse
+    {
+        public string Message { set; get; }
+    }
+
     public static class MarcajesDassnet
     {
         private const string LogFileLocation = @"C:\temp\servicelog.txt";
 
-        private static void Log(string logMessage)
-        {
-            Directory.CreateDirectory(Path.GetDirectoryName(LogFileLocation));
-            File.AppendAllText(LogFileLocation, DateTime.Now.ToString() + " : " + logMessage + Environment.NewLine);
-        }
+        //private static void Log(string logMessage)
+        //{
+        //    Directory.CreateDirectory(Path.GetDirectoryName(LogFileLocation));
+        //    File.AppendAllText(LogFileLocation, DateTime.Now.ToString() + " : " + logMessage + Environment.NewLine);
+        //}
 
 
         //Método llamado cuando el sincrfode está en producción de forma automática
@@ -247,7 +253,7 @@ namespace SINCRODEService
             //Mando a crear el marcaje en Evalos
             //Creo el json con los datos q debo enviarle al ws
             string jsonattendance;
-            string wsEvalosMethod;
+            string wsEvalosMethod = config["EvalosAccess"] + "booking/attendance/";
             string username = config["EvalosUser"];
             string password = config["EvalosPassword"];
 
@@ -256,112 +262,14 @@ namespace SINCRODEService
             int cantErrores = 0;
             int maxidProlog;
 
-            maxidProlog = sincrodecontext.TblProcesoslog.Any() ? sincrodecontext.TblProcesoslog.Max(l => l.IdProlog) : 0;
-            TblProcesoslog procesoLog;
+            List<Attendance> attendances = new List<Attendance>();
+            bool envioSuccefully;
 
-            //var empleadosXDistincta = sincrodecontext.TblMarcajeprocesado.Select(m => m.IdEmp).Distinct();
-            var empleadosXDistinct = (from m in sincrodecontext.TblMarcajeprocesado select m.IdEmp).Distinct().ToList();
-
-            //Log("Cantidad de marcajes con distintos empleados en la tabla "+empleadosXDistinct.Count());
-
-            foreach (var empleado in empleadosXDistinct)
+            void EnviarMarcajesWS(int idEmpleado)
             {
-                //var marcajesEmpleado = sincrodecontext.TblMarcajeprocesado.Where(m => m.IdEmp == empleado);
-                var marcajesEmpleado = (from m1 in sincrodecontext.TblMarcajeprocesado select m1).Where(m => m.IdEmp == empleado).ToList();
+                TblProcesoslog procesoLog;
 
-                List<Attendance> attendances = new List<Attendance>();
-                bool envioSuccefully;
-                IQueryable<TblMarcajeprocesado> marcajesToDelete;
-                foreach (var marcajeempleado in marcajesEmpleado)
-                {
-                    envioSuccefully = false;
-
-                    var attendance = new Attendance()
-                    {
-                        CodeEmployee = marcajeempleado.DniEmp,
-                        Date = marcajeempleado.FechaMarcajeMar.Date.ToString("yyyyMMdd",
-                            CultureInfo.InvariantCulture),
-                        Time =
-                            marcajeempleado.FechaMarcajeMar.ToString("HHmmss", CultureInfo.InvariantCulture),
-                        //Installation = "LOC",
-                        //Clock = "",
-                        Lector = marcajeempleado.IdLectorMar,
-                        //"Incidence": "00",
-                        Card = marcajeempleado.CodTarjetaMar,
-                        //"Ip": "10.0.0.1"
-                    };
-                    attendances.Add(attendance);
-                    cantTotalRegistros += 1;
-
-                    //Si ya hay 100 marcajes se realiza el envío y se sigue iterando en el foreach
-                    if (attendances.Count == 100)
-                    {
-                        //Envío de los datos de marcaje al WS de Evalos
-                        jsonattendance = JsonConvert.SerializeObject(attendances.ToArray());
-                        if (config["ShowDetailsLog"].ToUpper() == "TRUE")
-                        {
-                            Log("Json de 100 registros usado en el envío al WS de marcaje " + jsonattendance);
-                        }
-                        wsEvalosMethod = config["EvalosAccess"] + "booking/attendance/";
-                        if (jsonattendance != "[]")
-                        {
-                            //jsonResponse = WebServiceRest.PostRequestJson(wsEvalosMethod, jsonattendance, "POST");
-                            var httpWebResponse = WebServiceRest.PutPostRequest(wsEvalosMethod, username, password, jsonattendance, "POST");
-
-                            //Log("Respuesta del Post " + httpWebResponse.StatusCode + "" + httpWebResponse.StatusDescription);
-                            string messagelog;
-
-                            if (httpWebResponse.StatusCode == HttpStatusCode.Created)
-                            {
-                                cantRegistroPro += attendances.Count;
-                                envioSuccefully = true;
-                                messagelog = httpWebResponse.StatusDescription;
-                                //Log("Respuesta satisfactoria del POST " + messagelog);
-                            }
-                            else
-                            {
-                                cantErrores += attendances.Count;
-                                envioSuccefully = false;
-                                messagelog = httpWebResponse.StatusDescription;
-                                //Log("Respuesta incorrecta del POST " + messagelog);
-                            }
-
-                            //Salvo el log de los procesos
-                            procesoLog = new TblProcesoslog()
-                            {
-                                IdProlog = ++maxidProlog,
-                                IdPro = idPro,
-                                IdEmp = empleado,
-                                FechaIniPro = fIniPro,
-                                DescProlog = envioSuccefully
-                                    ? messagelog
-                                    : null,
-                                ExcProlog = envioSuccefully
-                                    ? null
-                                    : messagelog
-                            };
-                            sincrodecontext.TblProcesoslog.Add(procesoLog);
-
-                            //Aqui
-                            //Si el envío fue satisfactorio borro todos los marcajes de ese proceso (IdPro) y ese empleado (IdEmp)
-                            if (envioSuccefully)
-                            {
-                                marcajesToDelete = sincrodecontext.TblMarcajeprocesado.Where(m => m.IdPro == idPro && m.IdEmp == empleado);
-                                //Log("Mensajes para borrar: " + marcajesToDelete.Count());
-                                foreach (var marcajeprocesed in marcajesToDelete)
-                                {
-                                    sincrodecontext.TblMarcajeprocesado.Remove(marcajeprocesed);
-                                }
-                            }
-                            sincrodecontext.SaveChanges();
-                        }
-                        attendances.Clear();
-                    }
-                }
-
-                //Envío de los datos de marcaje al WS de Evalos
                 jsonattendance = JsonConvert.SerializeObject(attendances.ToArray());
-                wsEvalosMethod = config["EvalosAccess"] + "booking/attendance/";
                 if (jsonattendance != "[]")
                 {
                     if (config["ShowDetailsLog"].ToUpper() == "TRUE")
@@ -369,15 +277,36 @@ namespace SINCRODEService
                         Log("Json usado en el envío al WS de marcaje " + jsonattendance);
                     }
 
-                    //jsonResponse = WebServiceRest.PostRequestJson(wsEvalosMethod, jsonattendance, "POST");
                     var httpWebResponse = WebServiceRest.PutPostRequest(wsEvalosMethod, username, password, jsonattendance, "POST");
-                    //Log("Respuesta del Post "+ httpWebResponse.StatusCode + " "+httpWebResponse.StatusDescription);
 
+                    //Log("Respuesta del Post " + httpWebResponse.StatusCode + "" + httpWebResponse.StatusDescription);
                     string messagelog;
 
                     if (httpWebResponse.StatusCode == HttpStatusCode.Created)
                     {
-                        cantRegistroPro += attendances.Count;
+                        StreamReader reader = new StreamReader(httpWebResponse.GetResponseStream());
+                        string body = reader.ReadToEnd();
+                        Log("Respuesta de PUT de Marcajes, empleado " + attendances.Last<Attendance>().CodeEmployee + " => " + body);
+                        var jsonBody = JsonConvert.DeserializeObject<List<MarcajesResponse>>(body);
+                        for (int i = 0; i < attendances.Count; i++)
+                        {
+                            if (jsonBody[i].Message == "OK")
+                            {
+                                cantRegistroPro++;
+                                //Si el marcaje se envió satisfactoriamente se borra de la tabla de marcajes procesados
+                                var marcajeToDelete = sincrodecontext.TblMarcajeprocesado.FirstOrDefault(m => m.IdMar == attendances[i].Id );
+                                if (marcajeToDelete != null)
+                                {
+                                    sincrodecontext.TblMarcajeprocesado.Remove(marcajeToDelete);
+                                }
+                            }
+                            else
+                            {
+                                Log("Error en marcaje " + attendances[i].Date + " => " + jsonBody[i].Message);
+                                cantErrores++;
+                            }
+                        }
+
                         envioSuccefully = true;
                         messagelog = httpWebResponse.StatusDescription;
                         //Log("Respuesta satisfactoria del POST " + messagelog);
@@ -395,7 +324,7 @@ namespace SINCRODEService
                     {
                         IdProlog = ++maxidProlog,
                         IdPro = idPro,
-                        IdEmp = empleado,
+                        IdEmp = idEmpleado,
                         FechaIniPro = fIniPro,
                         DescProlog = envioSuccefully
                             ? messagelog
@@ -406,24 +335,57 @@ namespace SINCRODEService
                     };
                     sincrodecontext.TblProcesoslog.Add(procesoLog);
                     sincrodecontext.SaveChanges();
-                    //AQUI
-                    var proceso = sincrodecontext.TblProcesos.Where(p => p.IdPro == idPro).FirstOrDefault();
-                    proceso.RegistrosPro = cantRegistroPro;
-                    proceso.ErroresPro = cantErrores;
-
-                    //Si el envío fue satisfactorio borro todos los marcajes de ese proceso(IdPro) y ese empleado (IdEmp)
-                    if (envioSuccefully)
-                    {
-                        marcajesToDelete = sincrodecontext.TblMarcajeprocesado.Where(m => m.IdPro == idPro && m.IdEmp == empleado);
-
-                        foreach (var marcajeprocesed in marcajesToDelete)
-                        {
-                            sincrodecontext.TblMarcajeprocesado.Remove(marcajeprocesed);
-                        }
-
-                    }
-                    sincrodecontext.SaveChanges();
                 }
+                attendances.Clear();
+            }
+
+            maxidProlog = sincrodecontext.TblProcesoslog.Any() ? sincrodecontext.TblProcesoslog.Max(l => l.IdProlog) : 0;
+
+            //var empleadosXDistincta = sincrodecontext.TblMarcajeprocesado.Select(m => m.IdEmp).Distinct();
+            var empleadosXDistinct = (from m in sincrodecontext.TblMarcajeprocesado select m.IdEmp).Distinct().ToList();
+
+            //Log("Cantidad de marcajes con distintos empleados en la tabla "+empleadosXDistinct.Count());
+
+            foreach (var empleado in empleadosXDistinct)
+            {
+                //var marcajesEmpleado = sincrodecontext.TblMarcajeprocesado.Where(m => m.IdEmp == empleado);
+                var marcajesEmpleado = (from m1 in sincrodecontext.TblMarcajeprocesado select m1).Where(m => m.IdEmp == empleado).ToList();
+
+                foreach (var marcajeempleado in marcajesEmpleado)
+                {
+                    envioSuccefully = false;
+
+                    var attendance = new Attendance()
+                    {
+                        Id = marcajeempleado.IdMar,
+                        CodeEmployee = marcajeempleado.DniEmp,
+                        Date = marcajeempleado.FechaMarcajeMar.Date.ToString("yyyyMMdd", CultureInfo.InvariantCulture),
+                        Time = marcajeempleado.FechaMarcajeMar.ToString("HHmmss", CultureInfo.InvariantCulture),
+                        Installation = "LOC",
+                        Clock = marcajeempleado.IdLectorMar.PadLeft(3, '0'),
+                        Lector = "01",
+                        Incidence = "00",
+                        Card = marcajeempleado.CodTarjetaMar,
+                        //"Ip": "10.0.0.1"
+                    };
+                    attendances.Add(attendance);
+                    cantTotalRegistros += 1;
+
+                    //Si ya hay 100 marcajes se realiza el envío y se sigue iterando en el foreach
+                    if (attendances.Count == 100)
+                    {
+                        //Envío de los datos de marcaje al WS de Evalos
+                        EnviarMarcajesWS(empleado);
+                    }
+                }
+
+                //Envío de los datos de marcaje al WS de Evalos
+                EnviarMarcajesWS(empleado);
+
+                var proceso = sincrodecontext.TblProcesos.Where(p => p.IdPro == idPro).FirstOrDefault();
+                proceso.RegistrosPro = cantRegistroPro;
+                proceso.ErroresPro = cantErrores;
+                sincrodecontext.SaveChanges();
             }
         }
     }

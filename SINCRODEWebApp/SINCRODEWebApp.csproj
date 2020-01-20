@@ -8,10 +8,21 @@
     <AspNetCoreModuleName>AspNetCoreModuleV2</AspNetCoreModuleName>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Content Remove="log4net.config" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="log4net.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 
   <ItemGroup>
     <PackageReference Include="DataTables.AspNet.Core" Version="2.0.2" />
     <PackageReference Include="Font.Awesome" Version="5.12.0" />
+    <PackageReference Include="log4net" Version="2.0.8" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.AzureAD.UI" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" PrivateAssets="All" />
@@ -44,7 +55,7 @@
 
   <ItemGroup>
     <Reference Include="SINCRODEService">
-      <HintPath>..\SINCRODEService\bin\Release\netcoreapp2.2\SINCRODEService.dll</HintPath>
+      <HintPath>..\SINCRODEService\bin\Debug\netcoreapp2.2\SINCRODEService.dll</HintPath>
     </Reference>
   </ItemGroup>
 

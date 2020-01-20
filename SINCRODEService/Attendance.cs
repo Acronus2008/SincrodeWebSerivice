@@ -4,6 +4,7 @@ namespace SINCRODEService
 {
     class Attendance
     {
+        public int Id { get; set; }
         public String CodeEmployee { get; set; }
         public String Date { get; set; }
         //public String DateFormatted { get; set; }

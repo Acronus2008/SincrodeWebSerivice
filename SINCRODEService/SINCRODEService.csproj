@@ -17,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="log4net - Copy.config" />
     <None Remove="SincroDE.settings" />
   </ItemGroup>
 

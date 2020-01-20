@@ -5,18 +5,12 @@ using System.IO;
 using System.Net;
 using System.Text;
 using  System.Web;
+using static SINCRODEService.Program;
 
 namespace SINCRODEService
 {
     class WebServiceRest
     {
-        private const string _logFileLocation = @"C:\temp\servicelog.txt";
-
-        private static void Log(string logMessage)
-        {
-            Directory.CreateDirectory(Path.GetDirectoryName(_logFileLocation));
-            File.AppendAllText(_logFileLocation, DateTime.Now.ToString() + " : " + logMessage + Environment.NewLine);
-        }
 
         public static string GetEmployee(string endpoint, string username, string password, string NifDni)
         {
@@ -49,8 +43,6 @@ namespace SINCRODEService
             postStreams.Close();
             
             HttpWebResponse response = request.GetResponse() as HttpWebResponse;
-            StreamReader reader = new StreamReader(response.GetResponseStream());
-            string body = reader.ReadToEnd();
             
             return response;
         }

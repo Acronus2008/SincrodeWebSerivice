@@ -4,6 +4,7 @@ using System.ServiceProcess;
 using SINCRODEService.Models;
 using System.Linq;
 using System.Collections.Generic;
+using static SINCRODEService.Program;
 using static SINCRODEService.LogaFile;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
@@ -22,11 +23,11 @@ namespace SINCRODEService
 
         Timer timer = new Timer();
 
-        private void Log(string logMessage)
-        {
-            Directory.CreateDirectory(Path.GetDirectoryName(LogFileLocation));
-            File.AppendAllText(LogFileLocation, DateTime.Now.ToString() + " : " + logMessage + Environment.NewLine);
-        }
+        //private void Log(string logMessage)
+        //{
+        //    Directory.CreateDirectory(Path.GetDirectoryName(LogFileLocation));
+        //    File.AppendAllText(LogFileLocation, DateTime.Now.ToString() + " : " + logMessage + Environment.NewLine);
+        //}
 
         protected override void OnStart(string[] args)
         {
@@ -220,7 +221,14 @@ namespace SINCRODEService
                                     CodeDepartment = empleado.CoddepEmp,
                                     CodeCompany = empleado.CodnegocioEmp,
                                     CodeSection = empleado.CodsubnegocioEmp,
-                                    CodeSchedule = empleado.CojornadaEmp.ToString()
+                                    CodeSchedule = empleado.CojornadaEmp.ToString(),
+                                    CustomFields = new CustomField
+                                    {
+                                        EM_IDORACLE = empleado.IdoracleEmp,
+                                        EM_NUMPERSO = empleado.NumeroEmp,
+                                        EM_TIPOCONTRATO = empleado.TipocontratoEmp.ToString().PadLeft(3, '0'),
+                                        EM_REDUCCION = Math.Truncate(empleado.PorcenjornadaEmp ?? 0).ToString().PadLeft(3, '0')
+                                    }
                                 };
                                 string employeejson = JsonConvert.SerializeObject(employeeData);
                                 Log("Enviado al PUT de empleado " + employeejson);
@@ -278,7 +286,7 @@ namespace SINCRODEService
             {
                 try
                 {
-                    fechaini = DateTime.ParseExact(paramFecini +" 00:00:00", "yyyy-MM-dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
+                    fechaini = DateTime.ParseExact(paramFecini + " 00:00:00", "yyyy-MM-dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
                     fechafin = DateTime.ParseExact(paraFecFin + " 23:59:59", "yyyy-MM-dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
                 }
                 catch (Exception)
