@@ -250,15 +250,19 @@ namespace SINCRODEService
                                     CodeDepartment = empleado.CoddepEmp,
                                     CodeCompany = empleado.CodnegocioEmp,
                                     CodeSection = empleado.CodsubnegocioEmp,
-                                    CodeSchedule = empleado.CojornadaEmp.ToString(),
+                                    DateAdd = "20190901",
+                                    CodeAccess = "999",
+                                    CodeCorrection = "100",
+                                    CodeSchedule = "1ES",
                                     CustomFields = new CustomField
                                     {
                                         EM_IDORACLE = empleado.IdoracleEmp,
                                         EM_NUMPERSO = empleado.NumeroEmp,
                                         EM_TIPOCONTRATO = empleado.TipocontratoEmp.ToString().PadLeft(3, '0'),
-                                        EM_REDUCCION = Math.Truncate(empleado.PorcenjornadaEmp ?? 0).ToString().PadLeft(3, '0')
+                                        EM_REDUCCION = Math.Truncate(empleado.PorcenjornadaEmp ?? 0).ToString().PadLeft(3, '0'),
+                                        EM_NIEJERARQUIA = empleado.DniSuperior
                                     },
-                                    Observations = empleado.DniSuperior,
+                                    Observations = string.Empty,
                                     CodeWorkflow = ((empleado.CodcontratoEmp == "TT") ||
                                                     (empleado.CodcontratoEmp == "CW") ||
                                                     (empleado.CodcontratoEmp == "FT") ||
