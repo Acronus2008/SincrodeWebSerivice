@@ -8,6 +8,13 @@
         public string EM_IDORACLE { get; set; }
     }
 
+    class PatternCalendar
+    {
+        public string StartDate { get; set; }
+        public string EndDate { get; set; }
+        public bool Replace { get; set; }
+    }
+
     class Employee
     {
         public string Code { get; set; }
@@ -18,5 +25,10 @@
         public string CodeSection { get; set; }
         public string CodeSchedule { get; set; }
         public CustomField CustomFields { get; set; }
-}
+        public string Observations { get; set; }
+        public string CodeWorkflow { get; set; }
+        public string CodeKiosk { get; set; }
+        public string CodePatternCalendar { get; set; }
+        public PatternCalendar PatternCalendarData { get; set; }
+    }
 }

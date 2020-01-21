@@ -39,7 +39,7 @@ namespace SINCRODEService
             {
                 // Set up a timer that triggers.
                 timer.Interval = Intervalo.SetNextIntervalo();
-                Log("Primera fecha de ejecución: " + DateTime.Now.AddMilliseconds(timer.Interval));
+                Log("Primera fecha de ejecución: " + DateTime.Now.AddMilliseconds(timer.Interval).ToString("dd/MM/yyyy hh:mm:ss tt"));
                 timer.Elapsed += OnTimer;
                 timer.Start();
             }
@@ -77,7 +77,7 @@ namespace SINCRODEService
             Ejecutar();
 
             double proximoIntervalo = Intervalo.SetNextIntervalo();
-            Log("Próxima fecha de ejecución " + DateTime.Now.AddMilliseconds(proximoIntervalo));
+            Log("Próxima fecha de ejecución " + DateTime.Now.AddMilliseconds(proximoIntervalo).ToString("dd/MM/yyyy hh:mm:ss tt"));
             timer.Interval = proximoIntervalo;
             timer.Start();
         }
@@ -86,6 +86,29 @@ namespace SINCRODEService
         {
             if (string.IsNullOrEmpty(value)) return value;
             return value.Length <= maxLength ? value : value.Substring(0, maxLength);
+        }
+
+        //Obtiene el codigo de kiosko asociado a un empleado Supervisor
+        private string ObtenerCodigoSupervisor( string codigoEmpleado )
+        {
+            using (var context = new SINCRODEDBContext())
+            {
+                //Si busca si existe un codigo para el supervisor 
+                var super = context.TblSuperiorKiosko.FirstOrDefault( e => e.DniSup.Equals(codigoEmpleado) );
+                if ( super == null )
+                {
+                    //Si no existe se inserta
+                    var maxCodKiosko = context.TblSuperiorKiosko.Any() ? context.TblSuperiorKiosko.Max( e => e.CodKiosko ) : 0;
+                    super = new TblSuperiorKiosko()
+                    {
+                        DniSup = codigoEmpleado,
+                        CodKiosko = maxCodKiosko + 1
+                    };
+                    context.TblSuperiorKiosko.Add( super );
+                    context.SaveChanges();
+                }
+                return super.CodKiosko.ToString().PadLeft(3, '0');
+            }
         }
 
         private void Ejecutar()
@@ -157,8 +180,9 @@ namespace SINCRODEService
                                 DniEmp = TruncateStr(campo.NifDni, 20),
                                 NumeroEmp = TruncateStr(campo.NoPersonal, 20),
                                 IdoracleEmp = TruncateStr(campo.IdOracle, 20),
+                                DniSuperior = TruncateStr(campo.DniSuperior, 20),
                                 CodcenEmp = TruncateStr(campo.CodigoCentro, 50),
-                                UbicenEmp = TruncateStr(campo.UbicacionCentroTrabajo, 20),
+                                UbicenEmp = TruncateStr(campo.UbicacionCentroTrabajo, 30),
                                 CoddepEmp = TruncateStr(campo.CodigoDepartamento, 50),
                                 DescdepEmp = TruncateStr(campo.DescripcionCentroTrabajo, 50),
                                 PNRSupEmp = TruncateStr(campo.PNRSupEmp, 20),
@@ -211,13 +235,18 @@ namespace SINCRODEService
                             //Log("Se obtuvo el employee del WS: " + employee);
                             if (employee == null || employee == string.Empty || employee == "null")
                             {
+                                string codigoKiosko = "000";
+                                if (context.TblEmpleados.Any(e => e.DniSuperior == empleado.DniEmp))
+                                {
+                                    codigoKiosko = ObtenerCodigoSupervisor( empleado.DniEmp );
+                                }
                                 //Mando a crear el empleado en Evalos
                                 //Creo el json con los datos q debo enviarle al ws
                                 var employeeData = new Employee
                                 {
                                     Code = empleado.DniEmp,
                                     Description = empleado.NombreEmp + " " + empleado.ApellidosEmp,
-                                    CodeArea = empleado.UbicenEmp.Substring(0, 15),
+                                    CodeArea = empleado.UbicenEmp,
                                     CodeDepartment = empleado.CoddepEmp,
                                     CodeCompany = empleado.CodnegocioEmp,
                                     CodeSection = empleado.CodsubnegocioEmp,
@@ -228,6 +257,23 @@ namespace SINCRODEService
                                         EM_NUMPERSO = empleado.NumeroEmp,
                                         EM_TIPOCONTRATO = empleado.TipocontratoEmp.ToString().PadLeft(3, '0'),
                                         EM_REDUCCION = Math.Truncate(empleado.PorcenjornadaEmp ?? 0).ToString().PadLeft(3, '0')
+                                    },
+                                    Observations = empleado.DniSuperior,
+                                    CodeWorkflow = ((empleado.CodcontratoEmp == "TT") ||
+                                                    (empleado.CodcontratoEmp == "CW") ||
+                                                    (empleado.CodcontratoEmp == "FT") ||
+                                                    (empleado.CodcontratoEmp == "FC") ? "200" : "100"),
+                                    CodeKiosk = codigoKiosko,
+                                    CodePatternCalendar = "1ES",
+                                    /*
+                                    ((empleado.CodcontratoEmp == "FW") ||
+                                    (empleado.CodcontratoEmp == "FT") ||
+                                    (empleado.CodcontratoEmp == "FC") ? "1FW" : "1ES")*/
+                                    PatternCalendarData = new PatternCalendar
+                                    {
+                                        StartDate = "20190101",
+                                        EndDate = "20991231",
+                                        Replace = true
                                     }
                                 };
                                 string employeejson = JsonConvert.SerializeObject(employeeData);

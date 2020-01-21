@@ -20,6 +20,7 @@ namespace SINCRODEService.Models
         public virtual DbSet<TblMarcajeprocesado> TblMarcajeprocesado { get; set; }
         public virtual DbSet<TblProcesos> TblProcesos { get; set; }
         public virtual DbSet<TblProcesoslog> TblProcesoslog { get; set; }
+        public virtual DbSet<TblSuperiorKiosko> TblSuperiorKiosko { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -78,6 +79,11 @@ namespace SINCRODEService.Models
                     .HasMaxLength(20)
                     .HasComment("Identificador del empleado en la BD de Oracle");
 
+                entity.Property(e => e.DniSuperior)
+                    .HasColumnName("DNI_Sup")
+                    .HasMaxLength(20)
+                    .HasComment("Identificación fiscal del supervisor");
+
                 entity.Property(e => e.CodcenEmp)
                     .HasColumnName("CODCEN_EMP")
                     .HasMaxLength(50)
@@ -100,7 +106,7 @@ namespace SINCRODEService.Models
 
                 entity.Property(e => e.UbicenEmp)
                     .HasColumnName("UbiCentrabajo_EMP")
-                    .HasMaxLength(20)
+                    .HasMaxLength(30)
                     .HasComment("Nomenclatura de la ubicación del Centro de trabajo");
 
                 entity.Property(e => e.DesccentrabajoEmp)
@@ -130,7 +136,7 @@ namespace SINCRODEService.Models
 
                 entity.Property(e => e.CodnegocioEmp)
                     .HasColumnName("CodNegocio_EMP")
-                    .HasMaxLength(20)
+                    .HasMaxLength(30)
                     .HasComment("");
 
                 entity.Property(e => e.Descnegocio)
@@ -140,7 +146,7 @@ namespace SINCRODEService.Models
 
                 entity.Property(e => e.CodsubnegocioEmp)
                     .HasColumnName("CodSubnegocio_EMP")
-                    .HasMaxLength(20)
+                    .HasMaxLength(30)
                     .HasComment("");
 
                 entity.Property(e => e.DescsubnegocioEmp)
@@ -205,7 +211,7 @@ namespace SINCRODEService.Models
 
                 entity.Property(e => e.CodcontratoEmp)
                     .HasColumnName("CodContrato_EMP")
-                    .HasColumnType("int")
+                    .HasColumnType("string")
                     .HasComment("");
 
                 entity.Property(e => e.CojornadaEmp)
@@ -385,6 +391,25 @@ namespace SINCRODEService.Models
                     .HasForeignKey(d => d.IdPro)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_TBL_PROCESOSLOG_TBL_PROCESOS");
+            });
+            #endregion
+
+            #region TBL_SUPERIOR_KIOSKO
+            modelBuilder.Entity<TblSuperiorKiosko>(entity =>
+            {
+                entity.HasKey(e => e.DniSup);
+
+                entity.ToTable("TBL_SUPERIOR_KIOSKO", "dbo");
+
+                entity.Property(e => e.DniSup)
+                    .HasColumnName("DNI_Sup")
+                    .HasMaxLength(20).
+                    HasComment("Dni del Superior");
+
+                entity.Property(e => e.CodKiosko)
+                    .HasColumnName("CodKiosko")
+                    .HasColumnType("int")
+                    .HasComment("Codigo de kiosko");
             });
             #endregion
 
