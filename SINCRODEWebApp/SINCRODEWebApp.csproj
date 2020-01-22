@@ -55,7 +55,7 @@
 
   <ItemGroup>
     <Reference Include="SINCRODEService">
-      <HintPath>..\SINCRODEService\bin\Debug\netcoreapp2.2\SINCRODEService.dll</HintPath>
+      <HintPath>..\SINCRODEService\bin\Release\netcoreapp2.2\SINCRODEService.dll</HintPath>
     </Reference>
   </ItemGroup>
 
