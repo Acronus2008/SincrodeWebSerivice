@@ -13,9 +13,16 @@ namespace SINCRODEWebApp.Controllers
 {
     public class LoginController : Controller
     {
+        private bool AllowAnonimous;
+
+        public LoginController()
+        {
+            this.AllowAnonimous = GetConfiguration().GetValue<Boolean>("AllowAnonimous");
+        }
+
         public IActionResult Index()
         {
-            ViewBag.AllowAnonimous = GetConfiguration().GetValue<Boolean>("AllowAnonimous");
+            ViewBag.AllowAnonimous = this.AllowAnonimous;
             return View();
         }
 
@@ -23,6 +30,16 @@ namespace SINCRODEWebApp.Controllers
         {
             var _username = form["Username"].ToString();
             var _password = form["Password"].ToString();
+
+            if (this.AllowAnonimous)
+            {
+                if (_username.Equals("anonimous") && _password.Equals("anonimous"))
+                {
+                    CreateLoggedCookie("Anonimous");
+
+                    return RedirectToAction("Index", "Process");
+                }                
+            }
 
             ADAuthentication aDAuthentication = ADHelper.ActiveDirectoryLogin(_username, _password);
 
