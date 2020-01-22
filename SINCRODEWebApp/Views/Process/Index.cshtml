@@ -1,4 +1,4 @@
-﻿@model IEnumerable<SINCRODEWebApp.Models.ProcessModel>
+@model IEnumerable<SINCRODEWebApp.Models.ProcessModel>
 
 @{
     ViewData["Title"] = "Procesos";
@@ -189,11 +189,6 @@
                         {
                             "render": function (data, type, full, meta) {
                                 return '<a class="btn btn-info" href="/process/showLogs/' + full.idProcess + '">Logs</a>';
-                            }
-                        },
-                        {
-                            "render": function (data, type, full, meta) {
-                                return '<a class="btn btn-danger" href="/process/showLogs/' + full.idProcess + '">Proceso</a>';
                             }
                         }
                     ],
