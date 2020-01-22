@@ -81,6 +81,7 @@
                         Absentismo
                     </th>
                     <th></th>
+                    <th></th>
                 </tr>
             </thead>
         </table>
@@ -182,6 +183,11 @@
                         {
                             "render": function (data, type, full, meta) {
                                 return '<a class="btn btn-info" href="/process/showLogs/' + full.idProcess + '">Logs</a>';
+                            }
+                        },
+                        {
+                            "render": function (data, type, full, meta) {
+                                return '<a class="btn btn-danger" href="/process/showLogs/' + full.idProcess + '">Proceso</a>';
                             }
                         }
                     ],
