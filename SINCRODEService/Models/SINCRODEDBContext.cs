@@ -342,10 +342,6 @@ namespace SINCRODEService.Models
                 entity.Property(e => e.RegistrosPro)
                     .HasColumnName("Registros_PRO")
                     .HasComment("Numero de registros procesados");
-
-                entity.Property(e => e.AbsentismosPro)
-                .HasColumnName("ABSENTISMOS_PRO")
-                .HasComment("Si el proceso es de absentismo = 1 si no lo es el valor es null o 0");
             });
             #endregion
 
