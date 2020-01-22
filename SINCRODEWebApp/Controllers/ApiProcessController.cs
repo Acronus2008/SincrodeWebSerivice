@@ -18,7 +18,6 @@ namespace SINCRODEWebApp.Controllers
     public class ApiProcessController : Controller
     {
         private readonly DataBaseService.DataBaseService dataBase = new DataBaseService.DataBaseService();
-        // POST api/<controller>
 
         [HttpPost]
         public IActionResult Post()
@@ -44,7 +43,7 @@ namespace SINCRODEWebApp.Controllers
         {
             var model = new List<Models.ProcessModel>();
 
-            var process = dataBase.QueryTblProcesos();
+            var process = dataBase.QueryTblProcesosMarcajes();
             foreach (var proc in process)
             {
                 var logs = new List<LogsModel>();
