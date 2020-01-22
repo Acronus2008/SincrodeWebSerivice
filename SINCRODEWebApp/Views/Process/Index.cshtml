@@ -18,15 +18,6 @@
             Procesos de marcaje
         </a>
     </li>
-    @if (ViewBag.Absentismo == true)
-    {
-        <li class="nav-item">
-            <a class="nav-link" id="absentismos-tab" data-toggle="tab" href="#absentismos" role="tab" aria-controls="absentismos" aria-selected="false">
-                <i class="fas fa-cogs"></i>
-                Procesos de absentismos
-            </a>
-        </li>
-    }
 </ul>
 <div class="tab-content" id="myTabContent">
     <div class="tab-pane fade show active" id="marcajes" role="tabpanel" aria-labelledby="marcajes-tab">
@@ -59,42 +50,6 @@
         </table>
 
     </div>
-    @if (ViewBag.Absentismo == true)
-    {
-        <div class="tab-pane fade" id="absentismos" role="tabpanel" aria-labelledby="absentismos-tab">
-            <hr style="color:#00AFD2; background-color:#00AFD2;" />
-            <table class="table table-striped table-bordered" width="100%" id="ItemsAbsTable">
-                <thead>
-                    <tr>
-                        <th>Id Proceso</th>
-                        <th>
-                            Inicio
-                        </th>
-                        <th>
-                            Fin
-                        </th>
-                        <th>
-                            Cantidad de Registros
-                        </th>
-                        <th>
-                            Cantidad de Empleados
-                        </th>
-                        <th>
-                            Cantidad de errores
-                        </th>
-                        <th>
-                            Proceso automático
-                        </th>
-                        <th>
-                            Absentismo
-                        </th>
-                        <th></th>
-                    </tr>
-                </thead>
-            </table>
-
-        </div>
-    }
 
 </div>
 
@@ -155,69 +110,6 @@
                     "pagingType": "full_numbers",
                     "pageLength": 10
                 });
-
-
-            var generateAbsTable = $("#ItemsAbsTable")
-                .dataTable({
-                    "processing": true,
-                    "serverSide": true,
-                    "ajax": {
-                        "url": "/api/apiAbsentismos",
-                        "method": "POST"
-                    },
-                    "columns": [
-                        { "data": "idProcess" },
-                        { "data": "fechaInicio" },
-                        { "data": "fechaFin" },
-                        { "data": "registros" },
-                        { "data": "empleados" },
-                        { "data": "errores" },
-                        {
-                            "render": function (data, type, full, meta) {
-                                if (full.auto == true) {
-                                    return '<input type="checkbox" checked disabled>';
-                                }
-
-                                return '<input type="checkbox" disabled>';
-                            }
-                        },
-                        {
-                            "render": function (data, type, full, meta) {
-                                if (full.absentismo == true) {
-                                    return '<input type="checkbox" checked disabled>';
-                                }
-
-                                return '<input type="checkbox" disabled>';
-                            }
-                        },
-                        {
-                            "render": function (data, type, full, meta) {
-                                return '<a class="btn btn-info" href="/process/showLogs/' + full.idProcess + '">Logs</a>';
-                            }
-                        }
-                    ],
-                    "language": {
-                        "lengthMenu": "Cantidad de registros _MENU_ por página",
-                        "zeroRecords": "No existen procesos",
-                        "info": "Mostrando página _PAGE_ de _PAGES_",
-                        "infoEmpty": "No existen resultados disponibles",
-                        "infoFiltered": "(filtered from _MAX_ total records)",
-                        "search": "Buscar:",
-                        "processing": "Obteniendo listado de procesos",
-                        "searchPlaceholder": "Buscar procesos",
-                        "paginate": {
-                            "first": "Inicio",
-                            "last": "Ultimo",
-                            "next": "Próximo",
-                            "previous": "Anterior"
-                        }
-                    },
-                    "ordering": true,
-                    "paging": true,
-                    "pagingType": "full_numbers",
-                    "pageLength": 10
-                });
-
         })(jQuery);
     </script>
 }
