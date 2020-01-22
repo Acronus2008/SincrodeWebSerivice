@@ -25,14 +25,13 @@ namespace SINCRODEWebApp.Controllers
                 var requestFormData = Request.Form;
                 var fechaInicio = Convert.ToDateTime(requestFormData["FechaInicio"].ToString());
                 var fechaFin = Convert.ToDateTime(requestFormData["FechaFin"].ToString());
-                var absentismos = Convert.ToBoolean(requestFormData["Absentismo"][0].ToString());
 
                 if (fechaInicio.CompareTo(fechaFin) > 0)
                 {
                     return RedirectToAction("Index", "Process");
                 }
 
-                var isExecuted = ExecuteProccess(fechaInicio, fechaFin, absentismos);
+                var isExecuted = ExecuteProccess(fechaInicio, fechaFin);
 
                 ViewData["ExecutedProcess"] = isExecuted ?
                     string.Format("Proceso ejecutado con fecha inicial: {0} fecha final: {1}", requestFormData["FechaInicio"].ToString(), requestFormData["FechaFin"].ToString())
@@ -49,17 +48,12 @@ namespace SINCRODEWebApp.Controllers
             return RedirectToAction("Index", "Process");
         }
 
-        private static bool ExecuteProccess(DateTime fechaInicio, DateTime fechaFin, bool IsAbsentismo)
+        private static bool ExecuteProccess(DateTime fechaInicio, DateTime fechaFin)
         {
             try
             {
-                if (!IsAbsentismo)
-                {
-                    SINCRODEService.MarcajesDassnet.ProcesaMarcajesRango(fechaInicio, fechaFin, false);
-                    return true;
-                }
-
-                return false;
+                SINCRODEService.MarcajesDassnet.ProcesaMarcajesRango(fechaInicio, fechaFin, false);
+                return true;
             }
             catch (Exception)
             {
