@@ -24,13 +24,6 @@
                             <input asp-for="FechaFin" class="form-control" id="fechaFin" />
                             <span asp-validation-for="FechaFin" class="text-danger"></span>
                         </div>
-                        @if (ViewBag.Absentismo == true)
-                        {
-                            <div class="custom-control custom-checkbox mb-3">
-                                <input asp-for="Absentismo" type="checkbox" class="custom-control-input">
-                                <label asp-for="Absentismo" class="custom-control-label"></label>
-                            </div>
-                        }
 
                         <div class="alert alert-danger" role="alert" id="fechaWarning">
                             <span><i class="fas fa-info-circle"></i>&nbsp;La fecha inicio debe ser menor que la fecha final</span>
