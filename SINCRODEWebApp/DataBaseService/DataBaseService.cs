@@ -32,12 +32,7 @@ namespace SINCRODEWebApp.DataBaseService
 
         public IQueryable<TblProcesos> QueryTblProcesosMarcajes()
         {
-            return this._context.TblProcesos.OrderBy(m => m.FechaIniPro).Where(m=>m.AbsentismosPro == null || m.AbsentismosPro == false);
-        }
-
-        public IQueryable<TblProcesos> QueryTblProcesosAbsentismos()
-        {
-            return this._context.TblProcesos.OrderBy(m => m.FechaIniPro).Where(m => m.AbsentismosPro != null && m.AbsentismosPro == true);
+            return this._context.TblProcesos.OrderBy(m => m.FechaIniPro);
         }
 
         private void BuildContext()
