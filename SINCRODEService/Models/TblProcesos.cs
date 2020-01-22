@@ -19,6 +19,8 @@ namespace SINCRODEService.Models
         public int ErroresPro { get; set; }
         public bool? AutoPro { get; set; }
 
+        public bool? AbsentismosPro { get; set; }
+
         public virtual ICollection<TblMarcajeprocesado> TblMarcajeprocesado { get; set; }
         public virtual ICollection<TblProcesoslog> TblProcesoslog { get; set; }
     }
