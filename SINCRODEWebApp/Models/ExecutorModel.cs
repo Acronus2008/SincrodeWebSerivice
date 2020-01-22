@@ -16,5 +16,9 @@ namespace SINCRODEWebApp.Models
         public DateTime FechaFin { get; set; }
 
         public bool Executed { get; set; }
+
+        [Display(Name = "Proceso de absentismo")]
+        public bool Absentismo { get; set; }
+
     }
 }
