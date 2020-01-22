@@ -2,9 +2,11 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using SINCRODEWebApp.DAHelper;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Security.Claims;
 
 namespace SINCRODEWebApp.Controllers
@@ -13,6 +15,7 @@ namespace SINCRODEWebApp.Controllers
     {
         public IActionResult Index()
         {
+            ViewBag.AllowAnonimous = GetConfiguration().GetValue<Boolean>("AllowAnonimous");
             return View();
         }
 
@@ -31,6 +34,13 @@ namespace SINCRODEWebApp.Controllers
             }
 
             CreateLoggedCookie(_username);
+
+            return RedirectToAction("Index", "Process");
+        }
+
+        public IActionResult DoLoginAnomino()
+        {
+            CreateLoggedCookie("Anonimo");
 
             return RedirectToAction("Index", "Process");
         }
@@ -63,6 +73,11 @@ namespace SINCRODEWebApp.Controllers
 
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity), authProperties);
+        }
+
+        private static IConfigurationRoot GetConfiguration()
+        {
+            return new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appsettings.json").Build();
         }
     }
 }
