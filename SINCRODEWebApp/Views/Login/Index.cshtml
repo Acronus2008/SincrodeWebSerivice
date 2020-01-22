@@ -12,10 +12,11 @@
                     </span>
 
                     @{
-                        if(!string.IsNullOrEmpty(ViewData["Message"]?.ToString()) && ViewData["Message"]?.ToString() != "OK") {
-                        <div class="alert alert-danger" role="alert" style="width:100%;">
-                            <span><i class="lnr lnr-warning" style="color:red;"></i>&nbsp;Usuario o contraseña incorrectos</span>
-                        </div>
+                        if (!string.IsNullOrEmpty(ViewData["Message"]?.ToString()) && ViewData["Message"]?.ToString() != "OK")
+                        {
+                            <div class="alert alert-danger" role="alert" style="width:100%;">
+                                <span><i class="lnr lnr-warning" style="color:red;"></i>&nbsp;Usuario o contraseña incorrectos</span>
+                            </div>
                         }
                     }
 
@@ -38,6 +39,15 @@
                             Iniciar sesión
                         </button>
                     </div>
+
+                    @{
+                        if (ViewBag.AllowAnonimous == true)
+                        {
+                            <div>
+                                <button onclick="parent.location='@Url.Action("DoLoginAnomino", "Login")';return false;" type="button" class="btn btn-link">Anónimo</button>
+                            </div>
+                        }
+                    }
                 </form>
             </div>
         </div>
