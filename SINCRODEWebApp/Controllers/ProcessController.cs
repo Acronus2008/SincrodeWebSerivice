@@ -10,7 +10,6 @@ namespace SINCRODEWebApp.Controllers
         public IActionResult Index()
         {
             ViewBag.Marcajes = GetConfiguration().GetValue<Boolean>("Menu:Marcaje");
-            ViewBag.Absentismo = GetConfiguration().GetValue<Boolean>("Menu:Absentismo");
 
             if (!HttpContext.User.Identity.IsAuthenticated)
             {
