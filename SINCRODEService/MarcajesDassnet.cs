@@ -39,7 +39,7 @@ namespace SINCRODEService
                 int maxidProceso;
                 DateTime fechIniProceso = DateTime.Now;
 
-                using (var context = new SINCRODEDBContext())
+                var context = new SINCRODEDBContext();
                 {
                     var employees = context.TblEmpleados.ToList();
 

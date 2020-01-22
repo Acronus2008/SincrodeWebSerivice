@@ -230,11 +230,11 @@ namespace SINCRODEService
                         var tracews = "Get Employee: URL: " + wsEvalosMethod + " DNI: " + empleado.DniEmp;
                         try
                         {
-                            string employee;
-                            employee = WebServiceRest.GetEmployee(wsEvalosMethod, userEvalos, passwordEvalos, empleado.DniEmp);
+                            //string employee;
+                            //employee = WebServiceRest.GetEmployee(wsEvalosMethod, userEvalos, passwordEvalos, empleado.DniEmp);
                             //Log("Se obtuvo el employee del WS: " + employee);
-                            if (employee == null || employee == string.Empty || employee == "null")
-                            {
+                            //if (employee == null || employee == string.Empty || employee == "null")
+                            //{
                                 string codigoKiosko = "000";
                                 if (context.TblEmpleados.Any(e => e.DniSuperior == empleado.DniEmp))
                                 {
@@ -247,8 +247,8 @@ namespace SINCRODEService
                                     Code = empleado.DniEmp,
                                     Description = empleado.NombreEmp + " " + empleado.ApellidosEmp,
                                     CodeArea = empleado.UbicenEmp,
-                                    CodeDepartment = empleado.CoddepEmp,
-                                    CodeCompany = empleado.CodnegocioEmp,
+                                    CodeDepartment = empleado.CodnegocioEmp,
+                                    CodeCompany = empleado.CodsociedadEmp,
                                     CodeSection = empleado.CodsubnegocioEmp,
                                     DateAdd = "20190901",
                                     CodeAccess = "999",
@@ -293,14 +293,14 @@ namespace SINCRODEService
                                 {
                                     if (config["ShowDetailsLog"].ToUpper() == "TRUE")
                                     {
-                                        Log("Respuesta erronea del POST " + httpWebResponse.StatusCode + " => " + httpWebResponse.StatusDescription);
+                                        Log("Respuesta erronea del PUT " + httpWebResponse.StatusCode + " => " + httpWebResponse.StatusDescription);
                                     }
                                 }
-                            }
-                            else
-                            {
-                                encontrados++;
-                            }
+                            //}
+                            //else
+                            //{
+                            //  encontrados++;
+                            //}
                         }
                         catch (Exception ex)
                         {
@@ -308,7 +308,8 @@ namespace SINCRODEService
                         }
                         #endregion
                     }
-                    Log("Total de empleados en la BD SincroDE: " + context.TblEmpleados.Count().ToString() + "  Empleados encontrados en Evalos: " + encontrados + "  Empleados enviados: " + creados);
+                    //Log("Total de empleados en la BD SincroDE: " + context.TblEmpleados.Count().ToString() + "  Empleados encontrados en Evalos: " + encontrados + "  Empleados enviados: " + creados);
+                    Log("Total de empleados en la BD SincroDE: " + context.TblEmpleados.Count().ToString() + "  Empleados enviados: " + creados);
                 }
             }
             catch (Exception ex)
