@@ -128,6 +128,10 @@ namespace SINCRODEService
             {
                 set; get;
             }
+            public string DniSuperior
+            {
+                set; get;
+            }
             public string CodigoCentro
             {
                 set; get;
@@ -228,7 +232,7 @@ namespace SINCRODEService
             {
                 set; get;
             }
-            public int? CodContratoEmp
+            public string CodContratoEmp
             {
                 set; get;
             }
@@ -291,6 +295,7 @@ namespace SINCRODEService
                     campos.NifDni = workSheet.Rows[i][2].ToString();
                     campos.NoPersonal = workSheet.Rows[i][3].ToString();
                     campos.IdOracle = workSheet.Rows[i][4].ToString();
+                    campos.DniSuperior = workSheet.Rows[i][5].ToString();
                     campos.PNRSupEmp = workSheet.Rows[i][6].ToString();
                     campos.NombreResponsable = workSheet.Rows[i][7].ToString();
                     campos.ApellidosResponsable = workSheet.Rows[i][8].ToString();
@@ -316,8 +321,8 @@ namespace SINCRODEService
                     campos.JornadaLaboralDomingo = workSheet.Rows[i][28]==null || Convert.IsDBNull(workSheet.Rows[i][28]) ? (int?)null : Convert.ToInt32(workSheet.Rows[i][28]);
                     campos.Ad = workSheet.Rows[i][29].ToString();
                     campos.TipoContrato = workSheet.Rows[i][30] == null || Convert.IsDBNull(workSheet.Rows[i][30]) ? (int?)null : Convert.ToInt32(workSheet.Rows[i][30]);
+                    campos.CodContratoEmp = workSheet.Rows[i][31].ToString();
                     //No se llenan estos dos campo porque en el LOGA tiene cadena y Lazaro me dijo q los ignoraramos de momento. 
-                    //campos.CodContratoEmp = workSheet.Rows[i][31] == null || Convert.IsDBNull(workSheet.Rows[i][31]) ? (int?)null : Convert.ToInt32(workSheet.Rows[i][31]);
                     //campos.CoJornadaEmp = workSheet.Rows[i][32] == null || Convert.IsDBNull(workSheet.Rows[i][32]) ? (int?)null : Convert.ToInt32(workSheet.Rows[i][32]);
                     listaLOGA.Add(campos);
                 }

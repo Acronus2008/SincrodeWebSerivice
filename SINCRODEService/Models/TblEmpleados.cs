@@ -16,6 +16,7 @@ namespace SINCRODEService.Models
         public string DniEmp { get; set; }
         public string NumeroEmp { get; set; }
         public string IdoracleEmp { get; set; }
+        public string DniSuperior { get; set; }
         public string CodcenEmp { get; set; }
         public string UbicenEmp { get; set; }
         public string CoddepEmp { get; set; }
@@ -41,7 +42,7 @@ namespace SINCRODEService.Models
         public int? JornlaboralDomingo { get; set; }//todo
         public int? TipocontratoEmp { get; set; }
         public string Ad { get; set; }
-        public int? CodcontratoEmp { get; set; }
+        public string CodcontratoEmp { get; set; }
         public int? CojornadaEmp { get; set; }
         //Borradas
         public int? Coworking_EMP { get; set; }
