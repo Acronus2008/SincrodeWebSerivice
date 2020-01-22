@@ -27,6 +27,8 @@ namespace SINCRODEWebApp.Models
         [Display(Name ="Proceso automatico")]
         public bool Auto { get; set; }
 
+        public bool Absentismo { get; set; }
+
         public List<LogsModel> Logs { get; set; }
     }
 }
