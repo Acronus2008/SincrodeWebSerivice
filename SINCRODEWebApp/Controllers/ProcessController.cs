@@ -1,4 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using System;
+using System.IO;
 
 namespace SINCRODEWebApp.Controllers
 {
@@ -6,6 +9,9 @@ namespace SINCRODEWebApp.Controllers
     {
         public IActionResult Index()
         {
+            ViewBag.Marcajes = GetConfiguration().GetValue<Boolean>("Menu:Marcaje");
+            ViewBag.Absentismo = GetConfiguration().GetValue<Boolean>("Menu:Absentismo");
+
             if (!HttpContext.User.Identity.IsAuthenticated)
             {
                 return RedirectToAction("Index", "Login");
@@ -23,6 +29,11 @@ namespace SINCRODEWebApp.Controllers
 
             ViewData["ProccessId"] = id;
             return View();
+        }
+
+        private static IConfigurationRoot GetConfiguration()
+        {
+            return new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appsettings.json").Build();
         }
     }
 }
