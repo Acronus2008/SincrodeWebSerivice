@@ -20,29 +20,46 @@ namespace SINCRODEWebApp.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public IActionResult Post()
         {
-            var requestFormData = Request.Form;
-            var fechaInicio = Convert.ToDateTime(requestFormData["FechaInicio"].ToString());
-            var fechaFin = Convert.ToDateTime(requestFormData["FechaFin"].ToString());
-
-            if (fechaInicio.CompareTo(fechaFin) > 0)
+            try
             {
+                var requestFormData = Request.Form;
+                var fechaInicio = Convert.ToDateTime(requestFormData["FechaInicio"].ToString());
+                var fechaFin = Convert.ToDateTime(requestFormData["FechaFin"].ToString());
+                var absentismos = Convert.ToBoolean(requestFormData["Absentismo"][0].ToString());
+
+                if (fechaInicio.CompareTo(fechaFin) > 0)
+                {
+                    return RedirectToAction("Index", "Process");
+                }
+
+                var isExecuted = ExecuteProccess(fechaInicio, fechaFin, absentismos);
+
+                ViewData["ExecutedProcess"] = isExecuted ?
+                    string.Format("Proceso ejecutado con fecha inicial: {0} fecha final: {1}", requestFormData["FechaInicio"].ToString(), requestFormData["FechaFin"].ToString())
+                    : "Ocurrio un error al ejecutar el proceso";
+            }
+            catch (Exception e)
+            {
+                ViewData["ExecutedProcess"] =string.Format("Ocurrio un error al ejecutar el proceso {0}", e.Message);
+
                 return RedirectToAction("Index", "Process");
             }
 
-            var isExecuted = ExecuteProccess(fechaInicio, fechaFin);
-            ViewData["ExecutedProcess"] = isExecuted ?
-                string.Format("Proceso ejecutado con fecha inicial: {0} fecha final: {1}", requestFormData["FechaInicio"].ToString(), requestFormData["FechaFin"].ToString())
-                : "Ocurrio un error al ejecutar el proceso";
-            
+           
             return RedirectToAction("Index", "Process");
         }
 
-        private static bool ExecuteProccess(DateTime fechaInicio, DateTime fechaFin)
+        private static bool ExecuteProccess(DateTime fechaInicio, DateTime fechaFin, bool IsAbsentismo)
         {
             try
             {
-                SINCRODEService.MarcajesDassnet.ProcesaMarcajesRango(fechaInicio, fechaFin, false);
-                return true;
+                if (!IsAbsentismo)
+                {
+                    SINCRODEService.MarcajesDassnet.ProcesaMarcajesRango(fechaInicio, fechaFin, false);
+                    return true;
+                }
+
+                return false;
             }
             catch (Exception)
             {

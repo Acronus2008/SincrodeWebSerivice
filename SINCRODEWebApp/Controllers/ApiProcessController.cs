@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using SINCRODEService.Models;
 using SINCRODEWeb.Models;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -43,16 +40,24 @@ namespace SINCRODEWebApp.Controllers
         {
             var model = new List<Models.ProcessModel>();
 
-            var process = dataBase.QueryTblProcesosMarcajes();
-            foreach (var proc in process)
+            try
             {
-                var logs = new List<LogsModel>();
-                model.Add(new Models.ProcessModel() { IdProcess = proc.IdPro, FechaInicio = proc.FechaIniPro, FechaFin = proc.FechaFinPro, Registros = proc.RegistrosPro, Empleados = proc.EmpleadosPro, Errores = proc.ErroresPro, Auto = proc.AutoPro ?? false, Logs = logs });
-            }
+                var process = dataBase.QueryTblProcesosMarcajes();
+                foreach (var proc in process)
+                {
+                    var logs = new List<LogsModel>();
+                    model.Add(new Models.ProcessModel() { IdProcess = proc.IdPro, FechaInicio = proc.FechaIniPro, FechaFin = proc.FechaFinPro, Registros = proc.RegistrosPro, Empleados = proc.EmpleadosPro, Errores = proc.ErroresPro, Auto = proc.AutoPro ?? false, Logs = logs });
+                }
 
-            if (!string.IsNullOrEmpty(searchCriteria))
+                if (!string.IsNullOrEmpty(searchCriteria))
+                {
+                    model = model.Where(m => m.FechaInicio.GetDateTimeFormats().Contains(searchCriteria)).ToList();
+                }
+            }
+            catch (Exception)
             {
-                model = model.Where(m => m.FechaInicio.GetDateTimeFormats().Contains(searchCriteria)).ToList();
+
+                return new List<Models.ProcessModel>();
             }
 
             return model;
@@ -62,11 +67,19 @@ namespace SINCRODEWebApp.Controllers
         {
             var model = new List<LogsModel>();
 
-            var logs = dataBase.QueryTblProcesoslog().Where(m => m.IdPro == idProcess).ToList();
-            foreach (var log in logs)
+            try
             {
-                var employed = GetEmployedFromProcess(log.IdEmp);
-                model.Add(new LogsModel() { Employed = employed, FechaInicioPro = log.FechaIniPro, DescProlog = log.DescProlog, ExcProlog = log.ExcProlog });
+                var logs = dataBase.QueryTblProcesoslog().Where(m => m.IdPro == idProcess).ToList();
+                foreach (var log in logs)
+                {
+                    var employed = GetEmployedFromProcess(log.IdEmp);
+                    model.Add(new LogsModel() { Employed = employed, FechaInicioPro = log.FechaIniPro, DescProlog = log.DescProlog, ExcProlog = log.ExcProlog });
+                }
+            }
+            catch (Exception)
+            {
+
+                return new List<LogsModel>();
             }
 
             return model;
@@ -80,6 +93,12 @@ namespace SINCRODEWebApp.Controllers
 
         private List<Models.ProcessModel> ProcessCollection(List<Models.ProcessModel> lstElements, IFormCollection requestFormData)
         {
+
+            if (lstElements == null || lstElements.Count() == 0)
+            {
+                return new List<Models.ProcessModel>();
+            }
+
             var skip = Convert.ToInt32(requestFormData["start"].ToString());
             var pageSize = Convert.ToInt32(requestFormData["length"].ToString());
             Microsoft.Extensions.Primitives.StringValues tempOrder = new[] { "" };
@@ -95,7 +114,7 @@ namespace SINCRODEWebApp.Controllers
 
                     if (pageSize > 0)
                     {
-                        var prop = getProperty(columName);
+                        var prop = GetProperty(columName);
                         if (sortDirection == "asc")
                         {
                             return lstElements.OrderBy(prop.GetValue).Skip(skip).Take(pageSize).ToList();
@@ -112,6 +131,11 @@ namespace SINCRODEWebApp.Controllers
 
         private List<LogsModel> ProcessCollection(List<LogsModel> lstElements, IFormCollection requestFormData)
         {
+            if (lstElements == null || lstElements.Count() == 0)
+            {
+                return new List<LogsModel>();
+            }
+
             var skip = Convert.ToInt32(requestFormData["start"].ToString());
             var pageSize = Convert.ToInt32(requestFormData["length"].ToString());
             Microsoft.Extensions.Primitives.StringValues tempOrder = new[] { "" };
@@ -127,7 +151,7 @@ namespace SINCRODEWebApp.Controllers
 
                     if (pageSize > 0)
                     {
-                        var prop = getProperty(columName);
+                        var prop = GetProperty(columName);
                         if (sortDirection == "asc")
                         {
                             return lstElements.OrderBy(prop.GetValue).Skip(skip).Take(pageSize).ToList();
@@ -141,7 +165,7 @@ namespace SINCRODEWebApp.Controllers
             }
             return null;
         }
-        private PropertyInfo getProperty(string name)
+        private PropertyInfo GetProperty(string name)
         {
             var properties = typeof(Models.ProcessModel).GetProperties();
             PropertyInfo prop = null;

@@ -44,17 +44,25 @@ namespace SINCRODEWebApp.Controllers
         {
             var model = new List<LogsModel>();
 
-            var logs = dataBase.QueryTblProcesoslog().Where(m => m.IdPro == idProcess).ToList();
-
-            foreach (var log in logs)
+            try
             {
-                var employed = GetEmployedFromProcess(log.IdEmp);
-                model.Add(new LogsModel() { Employed = employed, FechaInicioPro = log.FechaIniPro, DescProlog = log.DescProlog, ExcProlog = log.ExcProlog });
+                var logs = dataBase.QueryTblProcesoslog().Where(m => m.IdPro == idProcess).ToList();
+
+                foreach (var log in logs)
+                {
+                    var employed = GetEmployedFromProcess(log.IdEmp);
+                    model.Add(new LogsModel() { Employed = employed, FechaInicioPro = log.FechaIniPro, DescProlog = log.DescProlog, ExcProlog = log.ExcProlog });
+                }
+
+                if (!string.IsNullOrEmpty(searchCriteria))
+                {
+                    model = model.Where(m => m.Employed.Contains(searchCriteria.ToUpper())).ToList();
+                }
             }
-
-            if (!string.IsNullOrEmpty(searchCriteria))
+            catch (Exception)
             {
-                model = model.Where(m => m.Employed.Contains(searchCriteria.ToUpper())).ToList();
+
+                return new List<LogsModel>();
             }
 
             return model;
@@ -68,6 +76,11 @@ namespace SINCRODEWebApp.Controllers
 
         private List<LogsModel> ProcessCollection(List<LogsModel> lstElements, IFormCollection requestFormData)
         {
+            if (lstElements == null || lstElements.Count() == 0)
+            {
+                return new List<LogsModel>();
+            }
+
             var skip = Convert.ToInt32(requestFormData["start"].ToString());
             var pageSize = Convert.ToInt32(requestFormData["length"].ToString());
             Microsoft.Extensions.Primitives.StringValues tempOrder = new[] { "" };
