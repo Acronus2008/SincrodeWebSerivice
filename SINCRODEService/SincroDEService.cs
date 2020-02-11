@@ -159,7 +159,7 @@ namespace SINCRODEService
                         FechaFinPro = DateTime.Now,
                         EmpleadosPro = employees.Count,
                         ErroresPro = 0,
-                        AutoPro = true,
+                        AutoPro = AutoPro,
                         RegistrosPro = 0,
                         TipoPro = false
                     };
