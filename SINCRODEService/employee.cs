@@ -32,6 +32,7 @@
         public string Observations { get; set; }
         public string CodeWorkflow { get; set; }
         public string CodeKiosk { get; set; }
+        public string Email { get; set; }
         public string CodePatternCalendar { get; set; }
         public PatternCalendar PatternCalendarData { get; set; }
     }

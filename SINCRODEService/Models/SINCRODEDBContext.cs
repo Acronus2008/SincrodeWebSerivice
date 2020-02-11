@@ -216,6 +216,11 @@ namespace SINCRODEService.Models
                     .HasColumnType("string")
                     .HasComment("");
 
+                entity.Property(e => e.EmailEmp)
+                    .HasColumnName("Email_EMP")
+                    .HasColumnType("string")
+                    .HasComment("");
+                
                 entity.Property(e => e.CojornadaEmp)
                     .HasColumnName("CoJornadaEsp_EMP")
                     .HasColumnType("int")

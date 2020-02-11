@@ -237,6 +237,10 @@ namespace SINCRODEService
             {
                 set; get;
             }
+            public string EmailEmp
+            {
+                set; get;
+            }
         }
 
         public class CamposAbsentismo
@@ -350,6 +354,7 @@ namespace SINCRODEService
                     campoError = "TipoContrato";
                     camposLOGA.TipoContrato = workSheet.Rows[i][30] == null || Convert.IsDBNull(workSheet.Rows[i][30]) ? (int?)null : Convert.ToInt32(workSheet.Rows[i][30]);
                     camposLOGA.CodContratoEmp = workSheet.Rows[i][31].ToString();
+                    camposLOGA.EmailEmp = workSheet.Rows[i][33].ToString();
                     //No se llenan estos dos campo porque en el LOGA tiene cadena y Lazaro me dijo q los ignoraramos de momento. 
                     //campos.CoJornadaEmp = workSheet.Rows[i][32] == null || Convert.IsDBNull(workSheet.Rows[i][32]) ? (int?)null : Convert.ToInt32(workSheet.Rows[i][32]);
                     listaLOGA.Add(camposLOGA);
