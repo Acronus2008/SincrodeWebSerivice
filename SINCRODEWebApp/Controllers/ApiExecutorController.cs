@@ -49,22 +49,54 @@ namespace SINCRODEWebApp.Controllers
             return RedirectToAction("Index", "Process");
         }
 
+
+        /// <summary>
+        /// Execute a process</br>To execute the absentismos process send the <b>IsAbsentismo</b> in true
+        /// </summary>
+        /// <param name="fechaInicio"></param>
+        /// <param name="fechaFin"></param>
+        /// <param name="IsAbsentismo"></param>
+        /// <returns></returns>
         private static bool ExecuteProccess(DateTime fechaInicio, DateTime fechaFin, bool IsAbsentismo)
         {
             try
             {
-                if (!IsAbsentismo)
-                {
-                    SINCRODEService.MarcajesDassnet.ProcesaMarcajesRango(fechaInicio, fechaFin, false);
-                    return true;
+                if (IsAbsentismo)
+                {                    
+                    return ExecuteAbsentismosProcess(fechaInicio, fechaFin);
                 }
 
-                return false;
+                ExecuteMarcajesProcess(fechaInicio, fechaFin);
+                return true;
+             
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                Console.WriteLine(e.Message);
                 return false;
             }
         }
+
+        /// <summary>
+        /// Execute absentismos process
+        /// </summary>
+        /// <param name="fechaInicio"></param>
+        /// <param name="fechaFin"></param>
+        /// <returns></returns>
+        private static bool ExecuteAbsentismosProcess(DateTime fechaInicio, DateTime fechaFin)
+        {
+            return SINCRODEService.AbsentismosProcess.ExecuteAbsentismosProcess(fechaInicio, fechaFin, false);
+        }
+
+        /// <summary>
+        /// Execute marcajes process
+        /// </summary>
+        /// <param name="fechaInicio"></param>
+        /// <param name="fechaFin"></param>
+        private static void ExecuteMarcajesProcess(DateTime fechaInicio, DateTime fechaFin)
+        {
+            SINCRODEService.MarcajesDassnet.ProcesaMarcajesRango(fechaInicio, fechaFin, false);
+        }
+
     }
 }
