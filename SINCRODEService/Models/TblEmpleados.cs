@@ -48,6 +48,7 @@ namespace SINCRODEService.Models
         public int? Coworking_EMP { get; set; }
 
         public virtual ICollection<TblMarcajeprocesado> TblMarcajeprocesado { get; set; }
+        public virtual ICollection<TblAbsentismoProcesado> TblAbsentismoProcesado { get; set; }
         public virtual ICollection<TblProcesoslog> TblProcesoslog { get; set; }
     }
 }

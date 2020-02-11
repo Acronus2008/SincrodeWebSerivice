@@ -17,11 +17,13 @@ namespace SINCRODEService.Models
         public int RegistrosPro { get; set; }
         public int EmpleadosPro { get; set; }
         public int ErroresPro { get; set; }
-        public bool? AutoPro { get; set; }
+        public bool AutoPro { get; set; }
+        public bool TipoPro { get; set; }
 
         public bool? AbsentismosPro { get; set; }
 
         public virtual ICollection<TblMarcajeprocesado> TblMarcajeprocesado { get; set; }
+        public virtual ICollection<TblAbsentismoProcesado> TblAbsentismoProcesado { get; set; }
         public virtual ICollection<TblProcesoslog> TblProcesoslog { get; set; }
     }
 }

@@ -21,6 +21,8 @@ namespace SINCRODEService.Models
         public virtual DbSet<TblProcesos> TblProcesos { get; set; }
         public virtual DbSet<TblProcesoslog> TblProcesoslog { get; set; }
         public virtual DbSet<TblSuperiorKiosko> TblSuperiorKiosko { get; set; }
+        public virtual DbSet<TblAbsentismoProcesado> TblAbsentismoProcesado { get; set; }
+        public virtual DbSet<TblCodigosAusencias> TblCodigosAusencias { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -343,9 +345,11 @@ namespace SINCRODEService.Models
                     .HasColumnName("Registros_PRO")
                     .HasComment("Numero de registros procesados");
 
-                entity.Property(e => e.AbsentismosPro)
-                .HasColumnName("ABSENTISMOS_PRO")
-                .HasComment("Si el proceso es de absentismo = 1 si no lo es el valor es null o 0");
+                entity.Property(e => e.TipoPro)
+                    .IsRequired()
+                    .HasColumnName("TIPO_PRO")
+                    .HasDefaultValueSql("((1))")
+                    .HasComment("Si el proceso es marcajes o no, 1- Marcajes ó 2- Absentismos");
             });
             #endregion
 
@@ -407,13 +411,88 @@ namespace SINCRODEService.Models
 
                 entity.Property(e => e.DniSup)
                     .HasColumnName("DNI_Sup")
-                    .HasMaxLength(20).
-                    HasComment("Dni del Superior");
+                    .HasMaxLength(20)
+                    .HasComment("Dni del Superior");
 
                 entity.Property(e => e.CodKiosko)
                     .HasColumnName("CodKiosko")
                     .HasColumnType("int")
                     .HasComment("Codigo de kiosko");
+            });
+            #endregion
+
+            #region TBL_ABSENTISMOPROCESADO
+            modelBuilder.Entity<TblAbsentismoProcesado>(entity =>
+            {
+                entity.HasKey(e => e.IdAbs);
+
+                entity.ToTable("TBL_ABSENTISMOPROCESADO", "dbo");
+
+                entity.Property(e => e.IdAbs)
+                   .HasColumnName("ID_ABS")
+                   .HasComment("Id del absentismo. Se utilizará como identificativo único del registro")
+                   .ValueGeneratedNever();
+
+                entity.Property(e => e.IdEmp)
+                     .HasColumnName("ID_EMP")
+                     .HasComment("Id del empleado según TBL_EMPLEADO");
+
+                entity.Property(e => e.DniEmp)
+                    .IsRequired()
+                    .HasColumnName("DNI_EMP")
+                    .HasMaxLength(20)
+                    .HasComment("DNI del empleado según PersonasT");
+
+                entity.Property(e => e.IdPro)
+                    .HasColumnName("ID_PRO")
+                    .HasComment("Identificador del Proceso realizado");
+
+                entity.Property(e => e.FechaInicio)
+                    .HasColumnName("FechaInicio")
+                    .HasColumnType("datetime")
+                    .HasComment("Fecha de inicio de la ausencia DD/MM/YYYY");
+
+                entity.Property(e => e.FechaFin)
+                    .HasColumnName("FechaFin")
+                    .HasColumnType("datetime")
+                    .HasComment("Fecha de fin de la ausencia DD/MM/YYYY");
+
+                entity.Property(e => e.CodAusencia)
+                    .HasColumnName("CodAusencia")
+                    .HasMaxLength(10)
+                    .HasComment("Codigo de la  ausencia");
+
+                entity.HasOne(d => d.IdEmpNavigation)
+                    .WithMany(p => p.TblAbsentismoProcesado)
+                    .HasForeignKey(d => d.IdEmp)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_TBL_PROCESOSLOG_TBL_EMPLEADOS");
+
+                entity.HasOne(d => d.IdProNavigation)
+                    .WithMany(p => p.TblAbsentismoProcesado)
+                    .HasForeignKey(d => d.IdPro)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_TBL_PROCESOSLOG_TBL_PROCESOS");
+            });
+            #endregion
+
+            #region TBL_CODIGOS_AUSENCIAS
+            modelBuilder.Entity<TblCodigosAusencias>(entity =>
+            {
+                entity.HasKey(e => e.IdAus);
+
+                entity.ToTable("TBL_CODIGOS_AUSENCIAS", "dbo");
+
+                entity.Property(e => e.IdAus)
+                   .HasColumnName("ID_AUS")
+                   .HasMaxLength(3)
+                   .HasComment("Id del absentismo. Se utilizará como identificativo único del registro")
+                   .ValueGeneratedNever();
+
+                entity.Property(e => e.CodAusencia)
+                    .HasColumnName("CodAusencia")
+                    .HasMaxLength(10)
+                    .HasComment("Codigo de la  ausencia");
             });
             #endregion
 

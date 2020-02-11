@@ -11,8 +11,7 @@ using Newtonsoft.Json;
 using System.Timers;
 using System.Net;
 using SINCRODEService.Config;
-
-//using System.Threading;
+using System.Globalization;
 
 namespace SINCRODEService
 {
@@ -20,14 +19,9 @@ namespace SINCRODEService
     {
         private const string LogFileLocation = @"C:\temp\servicelog.txt";
         private List<CamposLOGA> _listaLoga;
+        public static List<CamposAbsentismo> _listaAbsentismo;
 
         Timer timer = new Timer();
-
-        //private void Log(string logMessage)
-        //{
-        //    Directory.CreateDirectory(Path.GetDirectoryName(LogFileLocation));
-        //    File.AppendAllText(LogFileLocation, DateTime.Now.ToString() + " : " + logMessage + Environment.NewLine);
-        //}
 
         protected override void OnStart(string[] args)
         {
@@ -111,6 +105,242 @@ namespace SINCRODEService
             }
         }
 
+        public static void EliminarMarcajePendientes(int idProceso)
+        {
+            var context = new SINCRODEDBContext();
+            {
+                var marcajesPendientes = context.TblMarcajeprocesado.Where(mp => mp.IdPro == idProceso);
+                foreach (var marcaje in marcajesPendientes)
+                {
+                    context.TblMarcajeprocesado.Remove(marcaje);
+                }
+                context.SaveChanges();
+            }
+        }
+
+        //Método llamado cuando el sincrode está en producción de forma automática
+        private void ProcesaAusencias()
+        {
+            var context = new SINCRODEDBContext();
+            {
+                //Tomo los datos necesarios para iniciar el proceso y salvarlo al final de procesar todas las ausencias
+                DateTime lastdateprocess = context.TblProcesos.Any(p => !p.TipoPro)
+                    ? context.TblProcesos.Where(p => !p.TipoPro).Max(p => p.FechaIniPro)
+                    : new DateTime(2019, 10, 1);
+
+                Log("Se procesa a partir de la última fecha procesada: " + lastdateprocess);
+
+                ProcesaAusencias(lastdateprocess, DateTime.Now, true);
+            }
+        }
+
+        //Método llamado desde la aplicacion web
+        public static void ProcesaAusencias(DateTime fechaini, DateTime fechafin, bool AutoPro = true)
+        {
+            IConfiguration config = ConfigHelper.GetConfiguration();
+
+            //Recorro todos empleados de TBL_EMPLEADOS para consultar sus ausencias
+            try
+            {
+                int maxidProceso;
+                DateTime fechIniProceso = DateTime.Now;
+
+                var context = new SINCRODEDBContext();
+                {
+                    var employees = context.TblEmpleados.ToList();
+
+                    maxidProceso = context.TblProcesos.Any() ? context.TblProcesos.Max(p => p.IdPro) : 0;
+
+                    //Inserto el proceso
+                    var proceso = new TblProcesos()
+                    {
+                        IdPro = ++maxidProceso,
+                        FechaIniPro = fechIniProceso,
+                        FechaFinPro = DateTime.Now,
+                        EmpleadosPro = employees.Count,
+                        ErroresPro = 0,
+                        AutoPro = true,
+                        RegistrosPro = 0,
+                        TipoPro = false
+                    };
+                    context.TblProcesos.Add(proceso);
+
+                    int maxIdAbs = context.TblAbsentismoProcesado.Any()
+                        ? context.TblAbsentismoProcesado.Max(p => p.IdAbs)
+                        : 0;
+                    int ausenciasCount = 0;
+                    foreach (var employee in employees)
+                    {
+                        {
+                            #region Obtener Ausencias
+
+                            var ausenciasEmpleado = from a in _listaAbsentismo
+                                                    where a.NifDni == employee.DniEmp && a.FechaFin.HasValue &&
+                                                          ((a.FechaInicio >= fechaini && a.FechaInicio <= fechafin)||
+                                                           (a.FechaFin.Value >= fechaini && a.FechaFin.Value <= fechafin))
+                                                    select new AusenciaEmpleado
+                                                    {
+                                                        DNI = a.NifDni,
+                                                        FechaInicio = a.FechaInicio,
+                                                        FechaFin = a.FechaFin,
+                                                        CodAusencia = a.CodAusencia
+                                                    };
+                            #endregion
+
+                            #region Salvar Ausencias en la tabla TBL_ABSENTISMOPROCESADO
+                            foreach (var ausencia in ausenciasEmpleado)
+                            {
+                                //TODO depende de la base de datos Dassnet
+                                //Para cada empleado inserto el marcaje
+                                var absentismoProcesado = new TblAbsentismoProcesado()
+                                {
+                                    IdAbs = ++maxIdAbs,
+                                    IdEmp = employee.IdEmp,
+                                    DniEmp = employee.DniEmp,
+                                    IdPro = maxidProceso,
+                                    FechaInicio = ausencia.FechaInicio,
+                                    FechaFin = ausencia.FechaFin,
+                                    CodAusencia = ausencia.CodAusencia
+                                };
+                                context.TblAbsentismoProcesado.Add(absentismoProcesado);
+                                ausenciasCount++;
+                            }
+                        }
+                    }
+
+                    Log("Salvando los datos de absentismos");
+                    context.SaveChanges();
+                    Log("Salvados " + ausenciasCount + " ausencias");
+
+                    //Llamar al ws de Evalos para enviar las ausencias
+                    SendAusenciaToWS(context, maxidProceso, fechIniProceso);
+                }
+                #endregion
+            }
+            catch (Exception ex)
+            {
+                Log("#region Salvando en la tabla de ausencias: " + ex.ToString());
+            }
+        }
+
+        public static void SendAusenciaToWS(SINCRODEDBContext sincrodecontext, int idPro, DateTime fIniPro)
+        {
+            IConfiguration config = ConfigHelper.GetConfiguration();
+
+            Log("Comenzando el envio de ausencias al WS");
+            //Mando a crear la ausencia en Evalos
+            //Creo el json con los datos q debo enviarle al ws
+            string jsonabsence;
+            string wsEvalosMethod = config["EvalosAccess"] + "absence/";
+            string username = config["EvalosUser"];
+            string password = config["EvalosPassword"];
+
+            int cantTotalRegistros = 0;
+            int cantRegistroPro = 0;
+            int cantErrores = 0;
+            int maxidProlog;
+
+            void EnviarAusenciaWS(int idEmpleado, int idAusencia, Absence absence)
+            {
+                TblProcesoslog procesoLog;
+
+                jsonabsence = JsonConvert.SerializeObject(absence);
+                if (jsonabsence != "[]")
+                {
+                    if (config["ShowDetailsLog"].ToUpper() == "TRUE")
+                    {
+                        Log("Json usado en el envío al WS de ausencia " + jsonabsence);
+                    }
+
+                    try
+                    {
+                        var httpWebResponse = WebServiceRest.PutPostRequest(wsEvalosMethod, username, password, jsonabsence, "PUT");
+
+                        string messageLog;
+                        string messageError = string.Empty;
+
+                        StreamReader reader = new StreamReader(httpWebResponse.GetResponseStream());
+                        string body = reader.ReadToEnd();
+
+                        if (httpWebResponse.StatusCode == HttpStatusCode.OK)
+                        {
+                            cantRegistroPro++;
+                            //Si la ausencia se envió satisfactoriamente se borra de la tabla de absentismos procesados
+                            var ausenciaToDelete = sincrodecontext.TblAbsentismoProcesado.FirstOrDefault(m => m.IdAbs == idAusencia);
+                            if (ausenciaToDelete != null)
+                            {
+                                sincrodecontext.TblAbsentismoProcesado.Remove(ausenciaToDelete);
+                            }
+                            else
+                            {
+                                Log(string.Format("No fue posible encontrar registro con Id {0} en TblAbsentismoProcesado", idAusencia));
+                            }
+
+                            messageLog = httpWebResponse.StatusDescription;
+                        }
+                        else
+                        {
+                            Log("Respuesta de POST de Ausencia, empleado " + absence.CodeEmployee + " => " + body);
+
+                            cantErrores++;
+                            messageLog = httpWebResponse.StatusDescription;
+                            messageError = httpWebResponse.StatusDescription;
+                        }
+
+                        //Salvo el log de los procesos
+                        procesoLog = new TblProcesoslog()
+                        {
+                            IdProlog = ++maxidProlog,
+                            IdPro = idPro,
+                            IdEmp = idEmpleado,
+                            FechaIniPro = fIniPro,
+                            DescProlog = messageLog,
+                            ExcProlog = messageError
+                        };
+                        sincrodecontext.TblProcesoslog.Add(procesoLog);
+                        sincrodecontext.SaveChanges();
+
+                    }
+                    catch (Exception e)
+                    {
+                        Log("Error en el envio de POST de Ausencia: " + e.Message);
+                    }
+                }
+            }
+
+            maxidProlog = sincrodecontext.TblProcesoslog.Any() ? sincrodecontext.TblProcesoslog.Max(l => l.IdProlog) : 0;
+
+            var empleadosXDistinct = (from m in sincrodecontext.TblAbsentismoProcesado select m.IdEmp).Distinct().ToList();
+
+            foreach (var empleado in empleadosXDistinct)
+            {
+                var ausenciasEmpleado = (from m1 in sincrodecontext.TblAbsentismoProcesado select m1).Where(m => m.IdEmp == empleado).ToList();
+
+                foreach (var ausenciaEmpleado in ausenciasEmpleado)
+                {
+                    if (ausenciaEmpleado.FechaFin.HasValue)
+                    {
+                        var idAusencia = sincrodecontext.TblCodigosAusencias.FirstOrDefault(a => a.CodAusencia == ausenciaEmpleado.CodAusencia).IdAus;
+                        var absence = new Absence()
+                        {
+                            CodeEmployee = ausenciaEmpleado.DniEmp,
+                            StartDate = ausenciaEmpleado.FechaInicio.Date.ToString("yyyyMMdd", CultureInfo.InvariantCulture),
+                            EndDate = ausenciaEmpleado.FechaFin.Value.Date.ToString("yyyyMMdd", CultureInfo.InvariantCulture),
+                            Incidence = idAusencia,
+                        };
+                        cantTotalRegistros += 1;
+
+                        EnviarAusenciaWS(empleado, ausenciaEmpleado.IdAbs, absence);
+                    }
+                }
+
+                var proceso = sincrodecontext.TblProcesos.Where(p => p.IdPro == idPro).FirstOrDefault();
+                proceso.RegistrosPro = cantRegistroPro;
+                proceso.ErroresPro = cantErrores;
+                sincrodecontext.SaveChanges();
+            }
+        }
+
         private void Ejecutar()
         {
             IConfiguration config = ConfigHelper.GetConfiguration();
@@ -127,13 +357,13 @@ namespace SINCRODEService
 
             int NumberOfRetries = Convert.ToInt16(config["CantDeReintentos"]);
             int DelayOnRetry = 1000;
-            DownloadFile(servidorftp, usuario, password, carpetaDestino);
+            DownloadFile(servidorftp, remoteFile, usuario, password, carpetaDestino);
 
             for (int i = 1; i <= NumberOfRetries; ++i)
             {
                 try
                 {
-                    _listaLoga = ProcessWorkbook(carpetaDestino + "\\" + fileName);
+                    _listaLoga = ProcessLOGAWorkbook(carpetaDestino + "\\" + fileName);
                     Log("Fichero LOGA procesado");
                     break; // When done we can break loop
                 }
@@ -148,12 +378,42 @@ namespace SINCRODEService
                     }
                 }
             }
+
+            if (Intervalo.nextTimeToExecute == 1)
+            {
+                //Si es la primera hora del día se intenta descargar el archivo de Absentismos
+                remoteFile = config["FileAbsentismos"];
+                fileName = remoteFile.Substring(remoteFile.LastIndexOf("/") + 1);
+
+                DownloadFile(servidorftp, remoteFile, usuario, password, carpetaDestino);
+
+                for (int i = 1; i <= NumberOfRetries; ++i)
+                {
+                    try
+                    {
+                        _listaAbsentismo = ProcessAbsentismosWorkbook(carpetaDestino + "\\" + fileName);
+                        Log("Fichero de Absentismos procesado");
+                        break; // When done we can break loop
+                    }
+                    catch (IOException ex) when (i <= NumberOfRetries)
+                    {
+                        // You may check error code to filter some exceptions, not every error
+                        // can be recovered.
+                        System.Threading.Thread.Sleep(DelayOnRetry);
+                        if (i == NumberOfRetries)
+                        {
+                            Log("Error procesando el fichero de Absentismos: " + ex.ToString());
+                        }
+                    }
+                }
+
+            }
             #endregion
 
             #region Salvar empleado en la base de datos si no existe
             try
             {
-                bool employeeFound;
+                TblEmpleados employeeFound;
                 int encontrados = 0;
                 int creados = 0;
                 using (var context = new SINCRODEDBContext())
@@ -163,11 +423,45 @@ namespace SINCRODEService
                     Log("Salvando empleados en la BD SincroDE");
                     foreach (CamposLOGA campo in _listaLoga)
                     {
-                        employeeFound = context.TblEmpleados.Where(s => s.DniEmp == campo.NifDni).Any();
+                        employeeFound = context.TblEmpleados.FirstOrDefault(s => s.DniEmp == campo.NifDni);
 
                         //Si no encuentra el empleado lo inserta
-                        if (employeeFound)
+                        if (employeeFound != null)
                         {
+                            employeeFound.NombreEmp = TruncateStr(campo.Nombre, 100);
+                            employeeFound.ApellidosEmp = TruncateStr(campo.Apellidos, 100);
+                            employeeFound.NumeroEmp = TruncateStr(campo.NoPersonal, 20);
+                            employeeFound.IdoracleEmp = TruncateStr(campo.IdOracle, 20);
+                            employeeFound.DniSuperior = TruncateStr(campo.DniSuperior, 20);
+                            employeeFound.CodcenEmp = TruncateStr(campo.CodigoCentro, 50);
+                            employeeFound.UbicenEmp = TruncateStr(campo.UbicacionCentroTrabajo, 30);
+                            employeeFound.CoddepEmp = TruncateStr(campo.CodigoDepartamento, 50);
+                            employeeFound.DescdepEmp = TruncateStr(campo.DescripcionCentroTrabajo, 50);
+                            employeeFound.PNRSupEmp = TruncateStr(campo.PNRSupEmp, 20);
+                            employeeFound.NombresupEmp = TruncateStr(campo.NombreResponsable, 50);
+                            employeeFound.ApellidossupEmp = TruncateStr(campo.ApellidosResponsable, 50);
+                            employeeFound.CodnegocioEmp = TruncateStr(campo.CodigoNegocio, 20);
+                            employeeFound.CodsociedadEmp = TruncateStr(campo.CodigoSociedad, 20);
+                            employeeFound.CodsubnegocioEmp = TruncateStr(campo.CodigoSubNegocio, 20);
+                            employeeFound.DesccentrabajoEmp = TruncateStr(campo.DescripcionCentroTrabajo, 50);
+                            employeeFound.Descnegocio = TruncateStr(campo.DescripcionNegocio, 50);
+                            employeeFound.DescsociedadEmp = TruncateStr(campo.DescripcionSociedad, 50);
+                            employeeFound.DescsubnegocioEmp = TruncateStr(campo.DescripcionSubNegocio, 50);
+                            employeeFound.JornlaboralDomingo = campo.JornadaLaboralDomingo;
+                            employeeFound.JornlaboralLunes = campo.JornadaLaboralLunes;
+                            employeeFound.JornlaboralMartes = campo.JornadaLaboralMartes;
+                            employeeFound.JornlaboralMiercoles = campo.JornadaLaboralMiercoles;
+                            employeeFound.JornlaboralJueves = campo.JornadaLaboralJueves;
+                            employeeFound.JornlaboralViernes = campo.JornadaLaboralViernes;
+                            employeeFound.JornlaboralSabado = campo.JornadaLaboralSabado;
+                            employeeFound.JornlaboralFestivo = campo.JornadaLaboralFestiva;
+                            employeeFound.PorcenjornadaEmp = campo.PorcentajeReduccionJornada;
+                            employeeFound.TipocontratoEmp = campo.TipoContrato;
+                            employeeFound.CodcontratoEmp = campo.CodContratoEmp;
+                            employeeFound.Ad = TruncateStr(campo.Ad, 50);
+                            employeeFound.CojornadaEmp = campo.CoJornadaEmp;
+
+                            context.TblEmpleados.Update(employeeFound);
                             encontrados++;
                         }
                         else
@@ -268,11 +562,9 @@ namespace SINCRODEService
                                                     (empleado.CodcontratoEmp == "FT") ||
                                                     (empleado.CodcontratoEmp == "FC") ? "200" : "100"),
                                     CodeKiosk = codigoKiosko,
-                                    CodePatternCalendar = "1ES",
-                                    /*
-                                    ((empleado.CodcontratoEmp == "FW") ||
-                                    (empleado.CodcontratoEmp == "FT") ||
-                                    (empleado.CodcontratoEmp == "FC") ? "1FW" : "1ES")*/
+                                    CodePatternCalendar = ((empleado.CodcontratoEmp == "FW") ||
+                                                           (empleado.CodcontratoEmp == "FT") ||
+                                                           (empleado.CodcontratoEmp == "FC") ? "1FW" : "1ES"),
                                     PatternCalendarData = new PatternCalendar
                                     {
                                         StartDate = "20190101",
@@ -328,7 +620,7 @@ namespace SINCRODEService
             DateTime fechafin = new DateTime();
             bool setfechas = true;
             //si no se logra obtener una fecha válida se asume q no estan bien puestos los parámetros
-            if ((paramFecini == null || paramFecini == "") || (paraFecFin == null || paraFecFin == ""))
+            if (string.IsNullOrEmpty(paramFecini) || string.IsNullOrEmpty(paraFecFin))
             {
                 MarcajesDassnet.ProcesaMarcajes();
             }
@@ -355,6 +647,45 @@ namespace SINCRODEService
                     MarcajesDassnet.ProcesaMarcajes();
                 }
             }
+
+            #endregion
+
+            #region Salvar ausencias en la base de datos 
+
+            if (Intervalo.nextTimeToExecute == 1)
+            {
+                Log("Se comienzan a procesar las ausencias en la base de datos");
+
+                //si no se logra obtener una fecha válida se asume q no estan bien puestos los parámetros
+                if (string.IsNullOrEmpty(paramFecini) || string.IsNullOrEmpty(paraFecFin))
+                {
+                    ProcesaAusencias();
+                }
+                else
+                {
+                    try
+                    {
+                        fechaini = DateTime.ParseExact(paramFecini + " 00:00:00", "yyyy-MM-dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
+                        fechafin = DateTime.ParseExact(paraFecFin + " 23:59:59", "yyyy-MM-dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
+                    }
+                    catch (Exception)
+                    {
+                        setfechas = false;
+                    }
+
+                    if (setfechas)
+                    {
+                        Log("Se procesa desde " + fechaini + " hasta " + fechafin);
+                        ProcesaAusencias(fechaini, fechafin);
+                    }
+                    else
+                    {
+                        Log("Fechas de parámetro incorrectas. Se procesa a partir de la última fecha procesada");
+                        ProcesaAusencias();
+                    }
+                }
+            }
+                
 
             #endregion
         }

@@ -13,12 +13,9 @@ namespace SINCRODEService
 {
     class LogaFile
     {
-
-        public static void DownloadFile(string servidorftp, string usuario, string password, string carpetaDestino)
+        public static void DownloadFile(string servidorftp, string remoteFile, string usuario, string password, string carpetaDestino)
         {
             IConfiguration config = ConfigHelper.GetConfiguration();
-
-            string remoteFile = config["FileLoga"];
 
             if (config["SFTP"].ToUpper() == "FALSE")
             {
@@ -242,6 +239,26 @@ namespace SINCRODEService
             }
         }
 
+        public class CamposAbsentismo
+        {
+            public string NifDni
+            {
+                set; get;
+            }
+            public DateTime FechaInicio
+            {
+                set; get;
+            }
+            public DateTime? FechaFin
+            {
+                set; get;
+            }
+            public string CodAusencia
+            {
+                set; get;
+            }
+        }
+
         public static IExcelDataReader getExcelReader(string filePath)
         {
 
@@ -272,7 +289,7 @@ namespace SINCRODEService
             }
         }
 
-        public static List<CamposLOGA> ProcessWorkbook(string filePath)
+        public static List<CamposLOGA> ProcessLOGAWorkbook(string filePath)
         {
             List<CamposLOGA> listaLOGA = new List<CamposLOGA>();
 
@@ -285,53 +302,117 @@ namespace SINCRODEService
                 }
             }).Tables[0];
 
-            try
+            for (var i = 0; i < workSheet.Rows.Count; i++)
             {
-                for (var i = 0; i < workSheet.Rows.Count; i++)
+                string campoError = string.Empty;
+                try
                 {
-                    var campos = new CamposLOGA();
-                    campos.Nombre = workSheet.Rows[i][0].ToString();
-                    campos.Apellidos = workSheet.Rows[i][1].ToString();
-                    campos.NifDni = workSheet.Rows[i][2].ToString();
-                    campos.NoPersonal = workSheet.Rows[i][3].ToString();
-                    campos.IdOracle = workSheet.Rows[i][4].ToString();
-                    campos.DniSuperior = workSheet.Rows[i][5].ToString();
-                    campos.PNRSupEmp = workSheet.Rows[i][6].ToString();
-                    campos.NombreResponsable = workSheet.Rows[i][7].ToString();
-                    campos.ApellidosResponsable = workSheet.Rows[i][8].ToString();
-                    campos.CodigoCentro = workSheet.Rows[i][9].ToString();
-                    campos.UbicacionCentroTrabajo = workSheet.Rows[i][10].ToString();
-                    campos.DescripcionCentroTrabajo = workSheet.Rows[i][11].ToString();
-                    campos.CodigoDepartamento = workSheet.Rows[i][12].ToString();
-                    campos.DescripcionDepartamento = workSheet.Rows[i][13].ToString();
-                    campos.CodigoSociedad = workSheet.Rows[i][14].ToString();
-                    campos.DescripcionSociedad = workSheet.Rows[i][15].ToString();
-                    campos.CodigoNegocio = workSheet.Rows[i][16].ToString();
-                    campos.DescripcionNegocio = workSheet.Rows[i][17].ToString();
-                    campos.CodigoSubNegocio = workSheet.Rows[i][18].ToString();
-                    campos.DescripcionSubNegocio = workSheet.Rows[i][19].ToString();
-                    campos.PorcentajeReduccionJornada = workSheet.Rows[i][20] == null || Convert.IsDBNull(workSheet.Rows[i][20]) ? (double?)null : Convert.ToDouble(workSheet.Rows[i][20]);
-                    campos.JornadaLaboralFestiva = workSheet.Rows[i][21]==null || Convert.IsDBNull(workSheet.Rows[i][21]) ? (int?)null:Convert.ToInt32(workSheet.Rows[i][21]) ;
-                    campos.JornadaLaboralLunes =  workSheet.Rows[i][22]==null || Convert.IsDBNull(workSheet.Rows[i][22]) ? (int?)null : Convert.ToInt32(workSheet.Rows[i][22]);
-                    campos.JornadaLaboralMartes =  workSheet.Rows[i][23]==null || Convert.IsDBNull(workSheet.Rows[i][23]) ? (int?)null : Convert.ToInt32(workSheet.Rows[i][23]);
-                    campos.JornadaLaboralMiercoles =  workSheet.Rows[i][24]==null || Convert.IsDBNull(workSheet.Rows[i][24]) ? (int?)null : Convert.ToInt32(workSheet.Rows[i][24]);
-                    campos.JornadaLaboralJueves =  workSheet.Rows[i][25]==null || Convert.IsDBNull(workSheet.Rows[i][25]) ? (int?)null : Convert.ToInt32(workSheet.Rows[i][25]);
-                    campos.JornadaLaboralViernes =  workSheet.Rows[i][26]==null || Convert.IsDBNull(workSheet.Rows[i][26]) ? (int?)null : Convert.ToInt32(workSheet.Rows[i][26]);
-                    campos.JornadaLaboralSabado = workSheet.Rows[i][27]==null || Convert.IsDBNull(workSheet.Rows[i][27]) ? (int?)null : Convert.ToInt32(workSheet.Rows[i][27]);
-                    campos.JornadaLaboralDomingo = workSheet.Rows[i][28]==null || Convert.IsDBNull(workSheet.Rows[i][28]) ? (int?)null : Convert.ToInt32(workSheet.Rows[i][28]);
-                    campos.Ad = workSheet.Rows[i][29].ToString();
-                    campos.TipoContrato = workSheet.Rows[i][30] == null || Convert.IsDBNull(workSheet.Rows[i][30]) ? (int?)null : Convert.ToInt32(workSheet.Rows[i][30]);
-                    campos.CodContratoEmp = workSheet.Rows[i][31].ToString();
+                    var camposLOGA = new CamposLOGA();
+                    camposLOGA.Nombre = workSheet.Rows[i][0].ToString();
+                    camposLOGA.Apellidos = workSheet.Rows[i][1].ToString();
+                    camposLOGA.NifDni = workSheet.Rows[i][2].ToString();
+                    camposLOGA.NoPersonal = workSheet.Rows[i][3].ToString();
+                    camposLOGA.IdOracle = workSheet.Rows[i][4].ToString();
+                    camposLOGA.DniSuperior = workSheet.Rows[i][5].ToString();
+                    camposLOGA.PNRSupEmp = workSheet.Rows[i][6].ToString();
+                    camposLOGA.NombreResponsable = workSheet.Rows[i][7].ToString();
+                    camposLOGA.ApellidosResponsable = workSheet.Rows[i][8].ToString();
+                    camposLOGA.CodigoCentro = workSheet.Rows[i][9].ToString();
+                    camposLOGA.UbicacionCentroTrabajo = workSheet.Rows[i][10].ToString();
+                    camposLOGA.DescripcionCentroTrabajo = workSheet.Rows[i][11].ToString();
+                    camposLOGA.CodigoDepartamento = workSheet.Rows[i][12].ToString();
+                    camposLOGA.DescripcionDepartamento = workSheet.Rows[i][13].ToString();
+                    camposLOGA.CodigoSociedad = workSheet.Rows[i][14].ToString();
+                    camposLOGA.DescripcionSociedad = workSheet.Rows[i][15].ToString();
+                    camposLOGA.CodigoNegocio = workSheet.Rows[i][16].ToString();
+                    camposLOGA.DescripcionNegocio = workSheet.Rows[i][17].ToString();
+                    camposLOGA.CodigoSubNegocio = workSheet.Rows[i][18].ToString();
+                    camposLOGA.DescripcionSubNegocio = workSheet.Rows[i][19].ToString();
+                    campoError = "PorcentajeReduccionJornada";
+                    camposLOGA.PorcentajeReduccionJornada = workSheet.Rows[i][20] == null || Convert.IsDBNull(workSheet.Rows[i][20]) ? (double?)null : Convert.ToDouble(workSheet.Rows[i][20]);
+                    campoError = "JornadaLaboralFestiva";
+                    camposLOGA.JornadaLaboralFestiva = workSheet.Rows[i][21]==null || Convert.IsDBNull(workSheet.Rows[i][21]) ? (int?)null:Convert.ToInt32(workSheet.Rows[i][21]) ;
+                    campoError = "JornadaLaboralLunes";
+                    camposLOGA.JornadaLaboralLunes =  workSheet.Rows[i][22]==null || Convert.IsDBNull(workSheet.Rows[i][22]) ? (int?)null : Convert.ToInt32(workSheet.Rows[i][22]);
+                    campoError = "JornadaLaboralMartes";
+                    camposLOGA.JornadaLaboralMartes =  workSheet.Rows[i][23]==null || Convert.IsDBNull(workSheet.Rows[i][23]) ? (int?)null : Convert.ToInt32(workSheet.Rows[i][23]);
+                    campoError = "JornadaLaboralMiercoles";
+                    camposLOGA.JornadaLaboralMiercoles =  workSheet.Rows[i][24]==null || Convert.IsDBNull(workSheet.Rows[i][24]) ? (int?)null : Convert.ToInt32(workSheet.Rows[i][24]);
+                    campoError = "JornadaLaboralJueves";
+                    camposLOGA.JornadaLaboralJueves =  workSheet.Rows[i][25]==null || Convert.IsDBNull(workSheet.Rows[i][25]) ? (int?)null : Convert.ToInt32(workSheet.Rows[i][25]);
+                    campoError = "JornadaLaboralViernes";
+                    camposLOGA.JornadaLaboralViernes =  workSheet.Rows[i][26]==null || Convert.IsDBNull(workSheet.Rows[i][26]) ? (int?)null : Convert.ToInt32(workSheet.Rows[i][26]);
+                    campoError = "JornadaLaboralSabado";
+                    camposLOGA.JornadaLaboralSabado = workSheet.Rows[i][27]==null || Convert.IsDBNull(workSheet.Rows[i][27]) ? (int?)null : Convert.ToInt32(workSheet.Rows[i][27]);
+                    campoError = "JornadaLaboralDomingo";
+                    camposLOGA.JornadaLaboralDomingo = workSheet.Rows[i][28]==null || Convert.IsDBNull(workSheet.Rows[i][28]) ? (int?)null : Convert.ToInt32(workSheet.Rows[i][28]);
+                    camposLOGA.Ad = workSheet.Rows[i][29].ToString();
+                    campoError = "TipoContrato";
+                    camposLOGA.TipoContrato = workSheet.Rows[i][30] == null || Convert.IsDBNull(workSheet.Rows[i][30]) ? (int?)null : Convert.ToInt32(workSheet.Rows[i][30]);
+                    camposLOGA.CodContratoEmp = workSheet.Rows[i][31].ToString();
                     //No se llenan estos dos campo porque en el LOGA tiene cadena y Lazaro me dijo q los ignoraramos de momento. 
                     //campos.CoJornadaEmp = workSheet.Rows[i][32] == null || Convert.IsDBNull(workSheet.Rows[i][32]) ? (int?)null : Convert.ToInt32(workSheet.Rows[i][32]);
-                    listaLOGA.Add(campos);
+                    listaLOGA.Add(camposLOGA);
+                }
+                catch (Exception ex)
+                {
+                    Log(string.Format("Error en el procesamiento del archivo LOGA. Empleado: {0}. Campo: {1}. Mensaje de error: {2}", 
+                        workSheet.Rows[i][2].ToString(), campoError, ex.ToString()));
                 }
             }
-            catch (Exception ex)
-            {
-                Log("Excepción en el ProcessWorkbook " + ex.ToString());
-            }
             return listaLOGA;
+        }
+
+        public static List<CamposAbsentismo> ProcessAbsentismosWorkbook(string filePath)
+        {
+            List<CamposAbsentismo> listaAbsentismos = new List<CamposAbsentismo>();
+
+            var reader = getExcelReader(filePath);
+            var workSheet = reader.AsDataSet(new ExcelDataSetConfiguration()
+            {
+                ConfigureDataTable = (_) => new ExcelDataTableConfiguration()
+                {
+                    UseHeaderRow = true
+                }
+            }).Tables[0];
+
+            string fechaIni, fechaFin;
+            string anhoIni, mesIni, diaIni, anhoFin=string.Empty, mesFin = string.Empty, diaFin = string.Empty;
+
+            for (var i = 0; i < workSheet.Rows.Count; i++)
+            {
+                try
+                {
+                    var camposAbsentismo = new CamposAbsentismo();
+                    camposAbsentismo.NifDni = workSheet.Rows[i][2].ToString();
+
+                    fechaIni = workSheet.Rows[i][7].ToString();
+                    anhoIni = fechaIni.Substring(0, 4);
+                    mesIni = fechaIni.Substring(5, 2);
+                    diaIni = fechaIni.Substring(8, 2);
+                    camposAbsentismo.FechaInicio = new DateTime(Int32.Parse(anhoIni), Int32.Parse(mesIni), Int32.Parse(diaIni));
+
+                    fechaFin = workSheet.Rows[i][8].ToString();
+                    if (!string.IsNullOrEmpty(fechaFin))
+                    {
+                        anhoFin = fechaFin.Substring(0, 4);
+                        mesFin = fechaFin.Substring(5, 2);
+                        diaFin = fechaFin.Substring(8, 2);
+                        camposAbsentismo.FechaFin = new DateTime(Int32.Parse(anhoFin), Int32.Parse(mesFin), Int32.Parse(diaFin));
+                    }
+                    else
+                    {
+                        camposAbsentismo.FechaFin = (DateTime?)null;
+                    }
+                    camposAbsentismo.CodAusencia = workSheet.Rows[i][5].ToString();
+                    listaAbsentismos.Add(camposAbsentismo);
+                }
+                catch (Exception ex)
+                {
+                    Log("Excepción en el ProcessAbsentismosWorkbook " + ex.ToString());
+                }
+            }
+            return listaAbsentismos;
         }
     }
 }

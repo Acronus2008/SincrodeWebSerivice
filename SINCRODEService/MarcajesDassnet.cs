@@ -19,16 +19,7 @@ namespace SINCRODEService
 
     public static class MarcajesDassnet
     {
-        private const string LogFileLocation = @"C:\temp\servicelog.txt";
-
-        //private static void Log(string logMessage)
-        //{
-        //    Directory.CreateDirectory(Path.GetDirectoryName(LogFileLocation));
-        //    File.AppendAllText(LogFileLocation, DateTime.Now.ToString() + " : " + logMessage + Environment.NewLine);
-        //}
-
-
-        //Método llamado cuando el sincrfode está en producción de forma automática
+        //Método llamado cuando el sincrode está en producción de forma automática
         public static void ProcesaMarcajes()
         {
             IConfiguration config = ConfigHelper.GetConfiguration();
@@ -44,10 +35,17 @@ namespace SINCRODEService
                     var employees = context.TblEmpleados.ToList();
 
                     //Tomo los datos necesarios para iniciar el proceso y salvarlo al final de procesar todos los marcajes
-                    DateTime lastdateprocess = context.TblProcesos.Any()
-                        ? context.TblProcesos.Max(p => p.FechaIniPro)
-                        : DateTime.Now.AddMonths(-3).Date;
+                    DateTime lastdateprocess = context.TblProcesos.Any(p => p.TipoPro)
+                        ? context.TblProcesos.Where(p => p.TipoPro).Max(p => p.FechaIniPro)
+                        : new DateTime(2019, 10, 1);
                     maxidProceso = context.TblProcesos.Any() ? context.TblProcesos.Max(p => p.IdPro) : 0;
+
+                    string fechaIni = string.Format("{0}{1}{2}{3}{4}{5}", lastdateprocess.Year, lastdateprocess.Month.ToString().PadLeft(2, '0'), lastdateprocess.Day.ToString().PadLeft(2, '0'),
+                                                                          lastdateprocess.Hour.ToString().PadLeft(2, '0'), lastdateprocess.Minute.ToString().PadLeft(2, '0'), lastdateprocess.Second.ToString().PadLeft(2, '0'));
+                    string fechaFin = string.Format("{0}{1}{2}{3}{4}{5}", fechIniProceso.Year, fechIniProceso.Month.ToString().PadLeft(2, '0'), fechIniProceso.Day.ToString().PadLeft(2, '0'),
+                                                                          fechIniProceso.Hour.ToString().PadLeft(2, '0'), fechIniProceso.Minute.ToString().PadLeft(2, '0'), fechIniProceso.Second.ToString().PadLeft(2, '0'));
+                    long intfechaIni = Convert.ToInt64(fechaIni);
+                    long intfechaFin = Convert.ToInt64(fechaFin);
 
                     //Inserto el proceso
                     var proceso = new TblProcesos()
@@ -79,12 +77,8 @@ namespace SINCRODEService
                                                    join t in dassnetcontext.Tarjetas on m.FkTarjeta equals t.Id into tempJoin
                                                    from j in tempJoin.DefaultIfEmpty()
                                                    where p.Dni == employee.DniEmp &&
-                                                         Convert.ToInt32(m.FechaYhora.Substring(0, 4)) >= lastdateprocess.Year &&
-                                                         Convert.ToInt32(m.FechaYhora.Substring(4, 2)) >= lastdateprocess.Month &&
-                                                         Convert.ToInt32(m.FechaYhora.Substring(6, 2)) >= lastdateprocess.Day &&
-                                                         Convert.ToInt32(m.FechaYhora.Substring(8, 2)) >= lastdateprocess.Hour &&
-                                                         Convert.ToInt32(m.FechaYhora.Substring(10, 2)) >= lastdateprocess.Minute &&
-                                                         Convert.ToInt32(m.FechaYhora.Substring(12, 2)) >= lastdateprocess.Second
+                                                         Convert.ToInt64(m.FechaYhora) >= intfechaIni &&
+                                                         Convert.ToInt64(m.FechaYhora) <= intfechaFin
                                                    select new MarcajeEmpleado
                                                    {
                                                        Id = m.Id,
@@ -137,6 +131,7 @@ namespace SINCRODEService
             }
         }
 
+        //Método llamado desde la aplicacion web
         public static void ProcesaMarcajesRango(DateTime fechaini, DateTime fechafin, bool AutoPro = true)
         {
             IConfiguration config = ConfigHelper.GetConfiguration();
@@ -145,9 +140,10 @@ namespace SINCRODEService
             try
             {
                 int maxidProceso;
-                int intfechaIni = Convert.ToInt32(string.Format("{0}{1}{2}", fechaini.Year, fechaini.Month, fechaini.Day));
-                int intfechaFin = Convert.ToInt32(string.Format("{0}{1}{2}", fechafin.Year, fechafin.Month, fechafin.Day));
-                using (var context = new SINCRODEDBContext())
+                int intfechaIni = Convert.ToInt32(string.Format("{0}{1}{2}", fechaini.Year, fechaini.Month.ToString().PadLeft(2, '0'), fechaini.Day.ToString().PadLeft(2, '0')));
+                int intfechaFin = Convert.ToInt32(string.Format("{0}{1}{2}", fechafin.Year, fechafin.Month.ToString().PadLeft(2, '0'), fechafin.Day.ToString().PadLeft(2, '0')));
+
+                var context = new SINCRODEDBContext();
                 {
                     var employees = context.TblEmpleados.ToList();
 
@@ -263,7 +259,7 @@ namespace SINCRODEService
             int maxidProlog;
 
             List<Attendance> attendances = new List<Attendance>();
-            bool envioSuccefully;
+            List<int> attendanceIds = new List<int>();
 
             void EnviarMarcajesWS(int idEmpleado)
             {
@@ -277,66 +273,76 @@ namespace SINCRODEService
                         Log("Json usado en el envío al WS de marcaje " + jsonattendance);
                     }
 
-                    var httpWebResponse = WebServiceRest.PutPostRequest(wsEvalosMethod, username, password, jsonattendance, "POST");
-
-                    //Log("Respuesta del Post " + httpWebResponse.StatusCode + "" + httpWebResponse.StatusDescription);
-                    string messagelog;
-
-                    if (httpWebResponse.StatusCode == HttpStatusCode.Created)
+                    try
                     {
-                        StreamReader reader = new StreamReader(httpWebResponse.GetResponseStream());
-                        string body = reader.ReadToEnd();
-                        Log("Respuesta de PUT de Marcajes, empleado " + attendances.Last<Attendance>().CodeEmployee + " => " + body);
-                        var jsonBody = JsonConvert.DeserializeObject<List<MarcajesResponse>>(body);
-                        for (int i = 0; i < attendances.Count; i++)
+                        var httpWebResponse = WebServiceRest.PutPostRequest(wsEvalosMethod, username, password, jsonattendance, "POST");
+
+                        //Log("Respuesta del Post " + httpWebResponse.StatusCode + "" + httpWebResponse.StatusDescription);
+                        string messageLog;
+                        string messageError = string.Empty;
+
+                        if (httpWebResponse.StatusCode == HttpStatusCode.Created)
                         {
-                            if (jsonBody[i].Message == "OK")
+                            StreamReader reader = new StreamReader(httpWebResponse.GetResponseStream());
+                            string body = reader.ReadToEnd();
+                            Log("Respuesta de POST de Marcajes, empleado " + attendances.Last<Attendance>().CodeEmployee + " => " + body);
+                            var jsonBody = JsonConvert.DeserializeObject<List<MarcajesResponse>>(body);
+                            for (int i = 0; i < attendances.Count; i++)
                             {
-                                cantRegistroPro++;
-                                //Si el marcaje se envió satisfactoriamente se borra de la tabla de marcajes procesados
-                                var marcajeToDelete = sincrodecontext.TblMarcajeprocesado.FirstOrDefault(m => m.IdMar == attendances[i].Id );
-                                if (marcajeToDelete != null)
+                                if (jsonBody[i].Message == "OK")
                                 {
-                                    sincrodecontext.TblMarcajeprocesado.Remove(marcajeToDelete);
+                                    cantRegistroPro++;
+                                    //Si el marcaje se envió satisfactoriamente se borra de la tabla de marcajes procesados
+                                    var marcajeToDelete = sincrodecontext.TblMarcajeprocesado.FirstOrDefault(m => m.IdMar == attendanceIds[i]);
+                                    if (marcajeToDelete != null)
+                                    {
+                                        sincrodecontext.TblMarcajeprocesado.Remove(marcajeToDelete);
+                                    }
+                                    else
+                                    {
+                                        Log(string.Format("No se encontró en la tabla TBL_MARCAJEPROCESADO un registro con ID = {0}", attendanceIds[i]));
+                                    }
+                                }
+                                else
+                                {
+                                    Log("Error en marcaje " + attendances[i].Date + " => " + jsonBody[i].Message);
+                                    cantErrores++;
+                                    messageError = body;
                                 }
                             }
-                            else
-                            {
-                                Log("Error en marcaje " + attendances[i].Date + " => " + jsonBody[i].Message);
-                                cantErrores++;
-                            }
+
+                            messageLog = httpWebResponse.StatusDescription;
+                            //Log("Respuesta satisfactoria del POST " + messagelog);
+                        }
+                        else
+                        {
+                            cantErrores += attendances.Count;
+                            messageLog = httpWebResponse.StatusDescription;
+                            messageError = httpWebResponse.StatusDescription;
+                            //Log("Respuesta incorrecta del POST " + messagelog);
                         }
 
-                        envioSuccefully = true;
-                        messagelog = httpWebResponse.StatusDescription;
-                        //Log("Respuesta satisfactoria del POST " + messagelog);
-                    }
-                    else
-                    {
-                        cantErrores += attendances.Count;
-                        envioSuccefully = false;
-                        messagelog = httpWebResponse.StatusDescription;
-                        //Log("Respuesta incorrecta del POST " + messagelog);
-                    }
+                        //Salvo el log de los procesos
+                        procesoLog = new TblProcesoslog()
+                        {
+                            IdProlog = ++maxidProlog,
+                            IdPro = idPro,
+                            IdEmp = idEmpleado,
+                            FechaIniPro = fIniPro,
+                            DescProlog = messageLog,
+                            ExcProlog = messageError
+                        };
+                        sincrodecontext.TblProcesoslog.Add(procesoLog);
+                        sincrodecontext.SaveChanges();
 
-                    //Salvo el log de los procesos
-                    procesoLog = new TblProcesoslog()
+                    }
+                    catch (Exception e)
                     {
-                        IdProlog = ++maxidProlog,
-                        IdPro = idPro,
-                        IdEmp = idEmpleado,
-                        FechaIniPro = fIniPro,
-                        DescProlog = envioSuccefully
-                            ? messagelog
-                            : null,
-                        ExcProlog = envioSuccefully
-                            ? null
-                            : messagelog
-                    };
-                    sincrodecontext.TblProcesoslog.Add(procesoLog);
-                    sincrodecontext.SaveChanges();
+                        Log("Error en el envio de POST de Marcajes: " + e.Message);
+                    }
                 }
                 attendances.Clear();
+                attendanceIds.Clear();
             }
 
             maxidProlog = sincrodecontext.TblProcesoslog.Any() ? sincrodecontext.TblProcesoslog.Max(l => l.IdProlog) : 0;
@@ -353,11 +359,8 @@ namespace SINCRODEService
 
                 foreach (var marcajeempleado in marcajesEmpleado)
                 {
-                    envioSuccefully = false;
-
                     var attendance = new Attendance()
                     {
-                        Id = marcajeempleado.IdMar,
                         CodeEmployee = marcajeempleado.DniEmp,
                         Date = marcajeempleado.FechaMarcajeMar.Date.ToString("yyyyMMdd", CultureInfo.InvariantCulture),
                         Time = marcajeempleado.FechaMarcajeMar.ToString("HHmmss", CultureInfo.InvariantCulture),
@@ -369,6 +372,7 @@ namespace SINCRODEService
                         //"Ip": "10.0.0.1"
                     };
                     attendances.Add(attendance);
+                    attendanceIds.Add(marcajeempleado.IdMar);
                     cantTotalRegistros += 1;
 
                     //Si ya hay 100 marcajes se realiza el envío y se sigue iterando en el foreach
