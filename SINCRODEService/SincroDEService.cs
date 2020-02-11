@@ -137,7 +137,22 @@ namespace SINCRODEService
         //Método llamado desde la aplicacion web
         public static void ProcesaAusencias(DateTime fechaini, DateTime fechafin, bool AutoPro = true)
         {
+            Log("Entrando al metodo ProcesaAusencias");
+
             IConfiguration config = ConfigHelper.GetConfiguration();
+
+            Log("ProcesaAusencias luego de leer el AppSettings");
+
+            if (!AutoPro)
+            {
+                string carpetaDestino = config["RutaFileTemp"];
+                string remoteFile = config["FileAbsentismos"];
+                string fileName = remoteFile.Substring(remoteFile.LastIndexOf("/") + 1);
+
+                _listaAbsentismo = ProcessAbsentismosWorkbook(carpetaDestino + "\\" + fileName);
+            }
+
+            Log("ProcesaAusencias luego de leer el archivo de Absentismos");
 
             //Recorro todos empleados de TBL_EMPLEADOS para consultar sus ausencias
             try
@@ -169,6 +184,9 @@ namespace SINCRODEService
                         ? context.TblAbsentismoProcesado.Max(p => p.IdAbs)
                         : 0;
                     int ausenciasCount = 0;
+
+                    Log("ProcesaAusencias entes de recorrer los empleados");
+
                     foreach (var employee in employees)
                     {
                         {
