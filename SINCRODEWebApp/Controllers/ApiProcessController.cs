@@ -54,7 +54,7 @@ namespace SINCRODEWebApp.Controllers
                     model = model.Where(m => m.FechaInicio.GetDateTimeFormats().Contains(searchCriteria)).ToList();
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
 
                 return new List<Models.ProcessModel>();
