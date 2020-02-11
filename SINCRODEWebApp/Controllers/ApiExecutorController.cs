@@ -1,4 +1,5 @@
 ﻿using System;
+using log4net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,6 +10,8 @@ namespace SINCRODEWebApp.Controllers
     [Route("api/[controller]")]
     public class ApiExecutorController : Controller
     {
+        private static readonly ILog log = LogManager.GetLogger(typeof(ApiExecutorController));
+
         /// <summary>
         /// Ejecuta el proceso ProcesaMarcajesRango
         /// Retorna un 102 Procesando en caso de lanzarce correctamente el proceso
@@ -72,7 +75,7 @@ namespace SINCRODEWebApp.Controllers
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                log.Info(string.Format("Error in absentismos process Message: {0} \nTrace: {1}", e.Message, e.StackTrace));
                 return false;
             }
         }
