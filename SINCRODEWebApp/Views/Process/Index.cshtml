@@ -85,9 +85,6 @@
                         <th>
                             Proceso automático
                         </th>
-                        <th>
-                            Absentismo
-                        </th>
                         <th></th>
                     </tr>
                 </thead>
@@ -175,15 +172,6 @@
                         {
                             "render": function (data, type, full, meta) {
                                 if (full.auto == true) {
-                                    return '<input type="checkbox" checked disabled>';
-                                }
-
-                                return '<input type="checkbox" disabled>';
-                            }
-                        },
-                        {
-                            "render": function (data, type, full, meta) {
-                                if (full.absentismo == true) {
                                     return '<input type="checkbox" checked disabled>';
                                 }
 
