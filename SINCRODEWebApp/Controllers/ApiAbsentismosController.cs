@@ -46,7 +46,7 @@ namespace SINCRODEWebApp.Controllers
                 foreach (var proc in process)
                 {
                     var logs = new List<LogsModel>();
-                    model.Add(new Models.ProcessModel() { IdProcess = proc.IdPro, FechaInicio = proc.FechaIniPro, FechaFin = proc.FechaFinPro, Registros = proc.RegistrosPro, Empleados = proc.EmpleadosPro, Errores = proc.ErroresPro, Auto = proc.AutoPro ?? false, Logs = logs, Absentismo = proc.AbsentismosPro ?? false });
+                    model.Add(new Models.ProcessModel() { IdProcess = proc.IdPro, FechaInicio = proc.FechaIniPro, FechaFin = proc.FechaFinPro, Registros = proc.RegistrosPro, Empleados = proc.EmpleadosPro, Errores = proc.ErroresPro, Auto = proc.AutoPro, Logs = logs, Absentismo = proc.TipoPro });
                 }
 
                 if (!string.IsNullOrEmpty(searchCriteria))
