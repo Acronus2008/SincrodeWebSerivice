@@ -2,6 +2,7 @@
 using log4net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SINCRODEWebApp.Services;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -65,11 +66,11 @@ namespace SINCRODEWebApp.Controllers
             try
             {
                 if (IsAbsentismo)
-                {                    
-                    return ExecuteAbsentismosProcess(fechaInicio, fechaFin);
+                {
+                    return new AbsentismosService().ExecuteProcess(fechaInicio, fechaFin);
                 }
 
-                ExecuteMarcajesProcess(fechaInicio, fechaFin);
+                new MarcajesService().ExecuteProcess(fechaInicio, fechaFin);
                 return true;
              
             }
@@ -79,27 +80,5 @@ namespace SINCRODEWebApp.Controllers
                 return false;
             }
         }
-
-        /// <summary>
-        /// Execute absentismos process
-        /// </summary>
-        /// <param name="fechaInicio"></param>
-        /// <param name="fechaFin"></param>
-        /// <returns></returns>
-        private static bool ExecuteAbsentismosProcess(DateTime fechaInicio, DateTime fechaFin)
-        {
-            return SINCRODEService.AbsentismosProcess.ExecuteAbsentismosProcess(fechaInicio, fechaFin, false);
-        }
-
-        /// <summary>
-        /// Execute marcajes process
-        /// </summary>
-        /// <param name="fechaInicio"></param>
-        /// <param name="fechaFin"></param>
-        private static void ExecuteMarcajesProcess(DateTime fechaInicio, DateTime fechaFin)
-        {
-            SINCRODEService.MarcajesDassnet.ProcesaMarcajesRango(fechaInicio, fechaFin, false);
-        }
-
     }
 }
